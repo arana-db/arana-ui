@@ -2,7 +2,7 @@ import { PageContainer } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Alert, Card, Typography } from 'antd';
 import React from 'react';
-import styles from './Welcome.less';
+import styles from './Overview.less';
 
 const CodePreview: React.FC = ({ children }) => (
   <pre className={styles.pre}>

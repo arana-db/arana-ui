@@ -49,4 +49,10 @@ export default {
   'menu.editor.flow': '流程编辑器',
   'menu.editor.mind': '脑图编辑器',
   'menu.editor.koni': '拓扑编辑器',
+
+  'menu.overview': '概览',
+  'menu.datasource': '数据源管理',
+  'menu.connection': '连接管理',
+  'menu.sharingrule': '分片规则',
+  'menu.tenants': '租户管理',
 };
