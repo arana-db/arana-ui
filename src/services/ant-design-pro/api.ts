@@ -83,3 +83,19 @@ export async function removeRule(options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** 全局概览 GET /api/overview */
+export async function getOverview(options?: { [key: string]: any }) {
+  return request<Record<string, any>>('/api/overview', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** 全局概览 GET /api/overview/tree */
+export async function getOverviewTree(options?: { [key: string]: any }) {
+  return request<any[]>('/api/overview/tree', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}

@@ -1,55 +1,67 @@
+import { getOverview, getOverviewTree } from '@/services/ant-design-pro/api';
 import { PageContainer } from '@ant-design/pro-components';
-import { Card, Tree } from 'antd';
-import type { DataNode } from 'antd/es/tree';
-import React from 'react';
+import { Card, message, Popover, Tabs, Tree } from 'antd';
 
-const treeData: DataNode[] = [
-  {
-    title: 'parent 1',
-    key: '0-0',
-    children: [
-      {
-        title: 'parent 1-0',
-        key: '0-0-0',
-        children: [
-          { title: 'leaf', key: '0-0-0-0' },
-          {
-            title: (
-              <>
-                <div>multiple line title</div>
-                <div>multiple line title</div>
-              </>
-            ),
-            key: '0-0-0-1',
-          },
-          { title: 'leaf', key: '0-0-0-2' },
-        ],
-      },
-      {
-        title: 'parent 1-1',
-        key: '0-0-1',
-        children: [{ title: 'leaf', key: '0-0-1-0' }],
-      },
-      {
-        title: 'parent 1-2',
-        key: '0-0-2',
-        children: [
-          { title: 'leaf', key: '0-0-2-0' },
-          {
-            title: 'leaf',
-            key: '0-0-2-1',
-          },
-        ],
-      },
-    ],
+import React, { useEffect, useState } from 'react';
+import MonacoEditor from 'react-monaco-editor';
+const { TabPane } = Tabs;
+
+const EDITOR_OPTIONS: any = {
+  lineNumbers: 'off',
+  minimap: {
+    enabled: false,
   },
-];
+  readonly: true,
+  quickSuggestions: true,
+  wordWrap: 'ff',
+};
 
 const Welcome: React.FC = () => {
+  const [overview, setOverview] = useState<Record<string, any> | null>(null);
+  const [overviewTree, setOverviewTree] = useState<any[] | undefined>(undefined);
+  useEffect(() => {
+    (async () => {
+      const hide = message.loading('loading');
+      const res = await getOverview();
+      hide();
+      setOverview(res);
+    })();
+    (async () => {
+      const hide = message.loading('loading');
+      const res = await getOverviewTree();
+      hide();
+      setOverviewTree(res);
+    })();
+  }, []);
   return (
     <PageContainer>
       <Card>
-        <Tree showLine={true} defaultExpandedKeys={['0-0-0']} treeData={treeData} />
+        <Tabs defaultActiveKey="1">
+          <TabPane tab="Tree" key="1">
+            {overviewTree && overviewTree.length > 0 && (
+              <Tree
+                showLine={true}
+                defaultExpandAll={true}
+                treeData={overviewTree}
+                titleRender={({ title }) => (
+                  <Popover content={title} title="Title">
+                    <span>{title}</span>
+                  </Popover>
+                )}
+              />
+            )}
+          </TabPane>
+          <TabPane tab="JSON" key="3" style={{ width: '100%' }}>
+            <MonacoEditor
+              width={'100%'}
+              height={400}
+              language="json"
+              theme="vs"
+              value={JSON.stringify(overview, null, 4)}
+              options={EDITOR_OPTIONS}
+            />
+          </TabPane>
+        </Tabs>
       </Card>
     </PageContainer>
   );
