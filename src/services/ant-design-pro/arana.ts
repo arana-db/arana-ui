@@ -10,43 +10,95 @@ export async function getListeners(options?: { [key: string]: any }) {
   });
 }
 
-/** 获取当前的租户列表 GET /arana/tenants */
-export async function getTenants(options?: { [key: string]: any }) {
-  const res = await request<
-    {
-      name: string;
-      users: {
-        username: string;
-        password: string;
-      }[];
-    }[]
-  >('/arana/tenants', {
-    method: 'GET',
-    ...(options || {}),
+const createRestfulApi = <T>(
+  url: string,
+): {
+  get: (options: T) => Promise<Array<T>>;
+  post: (options: T) => Promise<any>;
+  delete: (options: T) => Promise<any>;
+  put: (options: T) => Promise<any>;
+} => {
+  const restfulApi = {};
+  const method = ['GET', 'POST', 'DELETE', 'PUT'];
+  method.forEach((m) => {
+    restfulApi[m.toLocaleLowerCase()] = async function (options: { [key: string]: any }) {
+      const reg = /\{(\w+)\}/g;
+      let e;
+      let realUrl = url;
+      while ((e = reg.exec(url))) {
+        console.log(e[0], options[e[1]]);
+        realUrl = realUrl.replace(e[0], options[e[1]]);
+      }
+      return await request(realUrl, {
+        method: m,
+        ...(options || {}),
+      });
+    };
   });
-  return res.reduce(
-    (arr, tenant) =>
-      arr.concat(
-        tenant.users.map((user) => ({
-          tenant: tenant.name,
-          ...user,
-        })),
-      ),
-    [],
-  );
-}
+  return restfulApi as {
+    get: (options: T) => Promise<Array<T>>;
+    post: (options: T) => Promise<any>;
+    delete: (options: T) => Promise<any>;
+    put: (options: T) => Promise<any>;
+  };
+};
 
-/** 创建租户 POST /arana/tenants */
-export async function createTenant(options?: { [key: string]: any }) {
-  return request<{}>('/arana/tenants', {
-    method: 'POST',
-    ...(options || {}),
-  });
-}
+type Tenant = {
+  name: string;
+  users: {
+    username: string;
+    password: string;
+  }[];
+};
 
-/** 删除租户 DELETE /arana/tenants */
-export async function deleteTenant(tenantName: string) {
-  return request<{}>(`/arana/tenants/${tenantName}`, {
-    method: 'DELETE',
-  });
-}
+export const TenantList = createRestfulApi<Tenant | any>(`/arana/tenants`);
+
+export const TenantItem = createRestfulApi<Tenant | any>(`/arana/tenants/{tenantName}`);
+
+type Node = {
+  name: string;
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  database: string;
+  weight: string;
+};
+
+export const NodeList = createRestfulApi<Node | any>(`/arana/tenants/{tenantName}/nodes`);
+
+export const NodeItem = createRestfulApi<Node | any>(
+  `/arana/tenants/{tenantName}/nodes/{nodeName}`,
+);
+
+type Group = {
+  name: string;
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  database: string;
+  weight: string;
+};
+
+export const GroupList = createRestfulApi<Node | any>(`/arana/tenants/{tenantName}/groups`);
+
+export const GroupItem = createRestfulApi<Node | any>(
+  `/arana/tenants/{tenantName}/groups/{groupName}`,
+);
+
+type Cluster = {
+  name: string;
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  database: string;
+  weight: string;
+};
+
+export const ClusterList = createRestfulApi<Cluster | any>(`/arana/tenants/{tenantName}/clusters`);
+
+export const ClusterItem = createRestfulApi<Cluster | any>(
+  `/arana/tenants/{tenantName}/clusters/{clustersName}`,
+);

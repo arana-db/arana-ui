@@ -1,6 +1,6 @@
-import { TenantItem, TenantList } from '@/services/ant-design-pro/arana';
+import { GroupItem, GroupList, NodeList } from '@/services/ant-design-pro/arana';
 import { PlusOutlined } from '@ant-design/icons';
-import { ModalForm, ProForm, ProFormText } from '@ant-design/pro-components';
+import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
 
 export default ({
@@ -47,20 +47,33 @@ export default ({
       submitTimeout={2000}
       onFinish={async (values) => {
         if (!modalState) {
-          await TenantList.post(values);
+          await GroupList.post(values);
         } else {
-          await TenantItem.put(values);
+          await GroupItem.put(values);
         }
         message.success('submit success');
         ok();
         return true;
       }}
     >
-      <ProFormText width="md" name="tenant" label="tenant" />
-      <ProForm.Group>
-        <ProFormText width="md" name="username" label="username" />
-        <ProFormText.Password width="md" name="password" label="password" />
-      </ProForm.Group>
+      <ProFormText width="md" name="name" label="name" />
+      <ProFormSelect
+        name="select-multiple"
+        label="Select[multiple]"
+        request={async ({ keyWords = '' }) => {
+          console.log(keyWords);
+          const res = await NodeList.get({});
+          return res.map(({ name }) => ({
+            label: name,
+            value: name,
+          }));
+        }}
+        fieldProps={{
+          mode: 'multiple',
+        }}
+        placeholder="Please select favorite colors"
+        rules={[{ required: true, message: 'Please select your favorite colors!', type: 'array' }]}
+      />
     </ModalForm>
   );
 };

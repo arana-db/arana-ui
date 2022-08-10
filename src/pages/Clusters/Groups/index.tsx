@@ -1,4 +1,4 @@
-import { TenantItem, TenantList } from '@/services/ant-design-pro/arana';
+import { GroupItem, GroupList } from '@/services/ant-design-pro/arana';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -16,13 +16,7 @@ const expandedRowRender = (item) => {
   return (
     <ProTable
       columns={[
-        { title: 'username', dataIndex: 'username', key: 'username' },
-        {
-          title: 'password',
-          dataIndex: 'password',
-          hideInSearch: true,
-          valueType: 'password',
-        },
+        { title: 'node', dataIndex: 'node', key: 'node' },
         {
           title: 'Action',
           dataIndex: 'operation',
@@ -34,7 +28,9 @@ const expandedRowRender = (item) => {
       headerTitle={false}
       search={false}
       options={false}
-      dataSource={item.users}
+      dataSource={item.nodes.map((v) => ({
+        node: v,
+      }))}
       pagination={false}
     />
   );
@@ -95,7 +91,7 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await TenantItem.delete(record.tenant);
+                await GroupItem.delete(record.tenant);
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -119,7 +115,7 @@ const Welcome: React.FC = () => {
           actionRef={actionRef}
           cardBordered
           request={async () => {
-            const data = await TenantList.get({});
+            const data = await GroupList.get({});
             console.log('data', data);
             return { success: true, data };
           }}
@@ -133,6 +129,7 @@ const Welcome: React.FC = () => {
               console.log('value: ', value);
             },
           }}
+          expandable={{ expandedRowRender }}
           rowKey="name"
           search={{
             labelWidth: 'auto',
@@ -142,7 +139,6 @@ const Welcome: React.FC = () => {
               // listsHeight: 400,
             },
           }}
-          expandable={{ expandedRowRender }}
           pagination={{
             pageSize: 5,
             onChange: (page) => console.log(page),

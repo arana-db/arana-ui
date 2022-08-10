@@ -54,5 +54,8 @@ export default {
   'menu.datasource': 'Data Source Manager',
   'menu.connection': 'Connection Manager',
   'menu.sharingrule': 'Sharing Rule Manager',
+  'menu.cluster': 'Cluster Manager',
+  'menu.clusterGroups': 'Cluster Groups Manager',
+  'menu.clusterNodes': 'Cluster Nodes Manager',
   'menu.tenants': 'Tenants Manager',
 };

@@ -1,4 +1,4 @@
-import { TenantItem, TenantList } from '@/services/ant-design-pro/arana';
+import { NodeItem, NodeList } from '@/services/ant-design-pro/arana';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -10,34 +10,6 @@ type GithubIssueItem = {
   tenant: string;
   username: string;
   password: string;
-};
-
-const expandedRowRender = (item) => {
-  return (
-    <ProTable
-      columns={[
-        { title: 'username', dataIndex: 'username', key: 'username' },
-        {
-          title: 'password',
-          dataIndex: 'password',
-          hideInSearch: true,
-          valueType: 'password',
-        },
-        {
-          title: 'Action',
-          dataIndex: 'operation',
-          key: 'operation',
-          valueType: 'option',
-          render: () => [<a key="Edit">Edit</a>, <a key="Delete">Delete</a>],
-        },
-      ]}
-      headerTitle={false}
-      search={false}
-      options={false}
-      dataSource={item.users}
-      pagination={false}
-    />
-  );
 };
 
 const Welcome: React.FC = () => {
@@ -60,6 +32,81 @@ const Welcome: React.FC = () => {
         ],
       },
     },
+    {
+      title: 'database',
+      dataIndex: 'database',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: 'database is required',
+          },
+        ],
+      },
+    },
+    {
+      title: 'host',
+      dataIndex: 'host',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: 'host is required',
+          },
+        ],
+      },
+    },
+    {
+      title: 'port',
+      dataIndex: 'port',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: 'port is required',
+          },
+        ],
+      },
+    },
+    {
+      title: 'username',
+      dataIndex: 'username',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: 'username is required',
+          },
+        ],
+      },
+    },
+    {
+      title: 'password',
+      dataIndex: 'password',
+      hideInSearch: true,
+      valueType: 'password',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: '此项为必填项',
+          },
+        ],
+      },
+    },
+    {
+      title: 'weight',
+      dataIndex: 'weight',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: 'weight is required',
+          },
+        ],
+      },
+    },
+
     {
       title: 'operate',
       valueType: 'option',
@@ -95,7 +142,7 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await TenantItem.delete(record.tenant);
+                await NodeItem.delete({ tenantName: record.tenant });
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -119,7 +166,9 @@ const Welcome: React.FC = () => {
           actionRef={actionRef}
           cardBordered
           request={async () => {
-            const data = await TenantList.get({});
+            const data = await NodeList.get({
+              tenantName: '1111',
+            });
             console.log('data', data);
             return { success: true, data };
           }}
@@ -142,7 +191,6 @@ const Welcome: React.FC = () => {
               // listsHeight: 400,
             },
           }}
-          expandable={{ expandedRowRender }}
           pagination={{
             pageSize: 5,
             onChange: (page) => console.log(page),

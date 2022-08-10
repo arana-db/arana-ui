@@ -1,4 +1,4 @@
-import { TenantItem, TenantList } from '@/services/ant-design-pro/arana';
+import { ClusterItem, ClusterList } from '@/services/ant-design-pro/arana';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -16,13 +16,7 @@ const expandedRowRender = (item) => {
   return (
     <ProTable
       columns={[
-        { title: 'username', dataIndex: 'username', key: 'username' },
-        {
-          title: 'password',
-          dataIndex: 'password',
-          hideInSearch: true,
-          valueType: 'password',
-        },
+        { title: 'group', dataIndex: 'group', key: 'group' },
         {
           title: 'Action',
           dataIndex: 'operation',
@@ -34,7 +28,9 @@ const expandedRowRender = (item) => {
       headerTitle={false}
       search={false}
       options={false}
-      dataSource={item.users}
+      dataSource={item.groups.map((v) => ({
+        group: v,
+      }))}
       pagination={false}
     />
   );
@@ -56,6 +52,18 @@ const Welcome: React.FC = () => {
           {
             required: true,
             message: 'name is required',
+          },
+        ],
+      },
+    },
+    {
+      title: 'type',
+      dataIndex: 'type',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: '此项为必填项',
           },
         ],
       },
@@ -95,7 +103,7 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await TenantItem.delete(record.tenant);
+                await ClusterItem.delete(record.tenant);
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -118,8 +126,9 @@ const Welcome: React.FC = () => {
           columns={columns}
           actionRef={actionRef}
           cardBordered
+          expandable={{ expandedRowRender }}
           request={async () => {
-            const data = await TenantList.get({});
+            const data = await ClusterList.get({});
             console.log('data', data);
             return { success: true, data };
           }}
@@ -142,7 +151,6 @@ const Welcome: React.FC = () => {
               // listsHeight: 400,
             },
           }}
-          expandable={{ expandedRowRender }}
           pagination={{
             pageSize: 5,
             onChange: (page) => console.log(page),
