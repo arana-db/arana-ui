@@ -27,6 +27,7 @@
     "start:no-mock": "cross-env MOCK=none UMI_ENV=dev max dev",
     "start:pre": "cross-env REACT_APP_ENV=pre UMI_ENV=dev max dev",
     "start:test": "cross-env REACT_APP_ENV=test MOCK=none UMI_ENV=dev max dev",
+    "mock": "prism mock arana.yaml",
     "test": "max test",
     "test:component": "max test ./src/components",
     "test:e2e": "node ./tests/run-tests.js",
