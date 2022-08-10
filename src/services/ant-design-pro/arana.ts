@@ -37,9 +37,16 @@ export async function getTenants(options?: { [key: string]: any }) {
 }
 
 /** 创建租户 POST /arana/tenants */
-export async function createTenants(options?: { [key: string]: any }) {
+export async function createTenant(options?: { [key: string]: any }) {
   return request<{}>('/arana/tenants', {
     method: 'POST',
     ...(options || {}),
+  });
+}
+
+/** 删除租户 DELETE /arana/tenants */
+export async function deleteTenant(tenantName: string) {
+  return request<{}>(`/arana/tenants/${tenantName}`, {
+    method: 'DELETE',
   });
 }

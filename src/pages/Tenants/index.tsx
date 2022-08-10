@@ -1,17 +1,10 @@
-import { getTenants } from '@/services/ant-design-pro/arana';
-import { EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { PageContainer, ProTable, TableDropdown } from '@ant-design/pro-components';
-import { Button, Card, Dropdown, Menu } from 'antd';
-import React, { useRef } from 'react';
-
-const menu = (
-  <Menu>
-    <Menu.Item key="1">1st item</Menu.Item>
-    <Menu.Item key="2">2nd item</Menu.Item>
-    <Menu.Item key="3">3rd item</Menu.Item>
-  </Menu>
-);
+import { deleteTenant, getTenants } from '@/services/ant-design-pro/arana';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
+import { PageContainer, ProTable } from '@ant-design/pro-components';
+import { Card, message, Modal } from 'antd';
+import React, { useRef, useState } from 'react';
+import Create from './Create';
 
 type GithubIssueItem = {
   tenant: string;
@@ -21,17 +14,20 @@ type GithubIssueItem = {
 
 const Welcome: React.FC = () => {
   const actionRef = useRef<ActionType>();
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [modalState, setModalState] = useState<Object | null>(null);
+  const [disabled, setDisabled] = useState<boolean>(false);
+  const formRef = useRef<ProFormInstance>();
 
   const columns: ProColumns<GithubIssueItem>[] = [
     {
-      title: '租户',
+      title: 'tenant',
       dataIndex: 'tenant',
-      copyable: true,
       formItemProps: {
         rules: [
           {
             required: true,
-            message: '此项为必填项',
+            message: 'tenant is required',
           },
         ],
       },
@@ -39,12 +35,11 @@ const Welcome: React.FC = () => {
     {
       title: 'username',
       dataIndex: 'username',
-      copyable: true,
       formItemProps: {
         rules: [
           {
             required: true,
-            message: '此项为必填项',
+            message: 'username is required',
           },
         ],
       },
@@ -52,9 +47,8 @@ const Welcome: React.FC = () => {
     {
       title: 'password',
       dataIndex: 'password',
-      copyable: true,
-      ellipsis: true,
-      tip: '标题过长会自动收缩',
+      hideInSearch: true,
+      valueType: 'password',
       formItemProps: {
         rules: [
           {
@@ -65,24 +59,52 @@ const Welcome: React.FC = () => {
       },
     },
     {
-      title: '操作',
+      title: 'operate',
       valueType: 'option',
       key: 'option',
-      render: (text, record, _, action) => [
-        <a key="editable" onClick={() => {}}>
-          编辑
+      render: (text, record) => [
+        <a
+          key="editable"
+          onClick={() => {
+            setModalState(record);
+            setModalVisible(true);
+          }}
+        >
+          Edit
         </a>,
-        <a target="_blank" rel="noopener noreferrer" key="view">
-          查看
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          key="view"
+          onClick={() => {
+            setModalState(record);
+            setDisabled(true);
+            setModalVisible(true);
+          }}
+        >
+          View
         </a>,
-        <TableDropdown
-          key="actionGroup"
-          onSelect={() => action?.reload()}
-          menus={[
-            { key: 'copy', name: '复制' },
-            { key: 'delete', name: '删除' },
-          ]}
-        />,
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          key="view"
+          onClick={() => {
+            Modal.confirm({
+              title: 'Do you Want to delete these items?',
+              icon: <ExclamationCircleOutlined />,
+              async onOk() {
+                await deleteTenant(record.tenant);
+                message.success('Delete success!');
+                actionRef.current?.reload();
+              },
+              onCancel() {
+                console.log('Cancel');
+              },
+            });
+          }}
+        >
+          Delete
+        </a>,
       ],
     },
   ];
@@ -118,33 +140,22 @@ const Welcome: React.FC = () => {
               // listsHeight: 400,
             },
           }}
-          form={{
-            // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
-            syncToUrl: (values, type) => {
-              if (type === 'get') {
-                return {
-                  ...values,
-                  created_at: [values.startTime, values.endTime],
-                };
-              }
-              return values;
-            },
-          }}
           pagination={{
             pageSize: 5,
             onChange: (page) => console.log(page),
           }}
-          dateFormatter="string"
-          headerTitle="高级表格"
           toolBarRender={() => [
-            <Button key="button" icon={<PlusOutlined />} type="primary">
-              新建
-            </Button>,
-            <Dropdown key="menu" overlay={menu}>
-              <Button>
-                <EllipsisOutlined />
-              </Button>
-            </Dropdown>,
+            <Create
+              formRef={formRef}
+              modalState={modalState}
+              disabled={disabled}
+              setDisabled={setDisabled}
+              modalVisible={modalVisible}
+              setModalVisible={setModalVisible}
+              ok={() => {
+                actionRef.current?.reload();
+              }}
+            />,
           ]}
         />
       </Card>
