@@ -65,7 +65,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       ? [
           <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
             <LinkOutlined />
-            <span>OpenAPI 文档</span>
+            <span>OpenAPI Document</span>
           </Link>,
         ]
       : [],
@@ -94,6 +94,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         </>
       );
     },
+    title: 'Arana DB',
     ...initialState?.settings,
   };
 };

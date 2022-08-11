@@ -49,4 +49,13 @@ export default {
   'menu.editor.flow': 'Flow Editor',
   'menu.editor.mind': 'Mind Editor',
   'menu.editor.koni': 'Koni Editor',
+
+  'menu.overview': 'Overview',
+  'menu.datasource': 'Data Source Manager',
+  'menu.connection': 'Connection Manager',
+  'menu.sharingrule': 'Sharing Rule Manager',
+  'menu.cluster': 'Cluster Manager',
+  'menu.clusterGroups': 'Cluster Groups Manager',
+  'menu.clusterNodes': 'Cluster Nodes Manager',
+  'menu.tenants': 'Tenants Manager',
 };

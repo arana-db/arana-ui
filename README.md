@@ -1,8 +1,10 @@
-# Ant Design Pro
+# Arana UI
 
 This project is initialized with [Ant Design Pro](https://pro.ant.design). Follow is the quick guide for how to use.
 
 ## Environment Prepare
+
+Install [Node](https://nodejs.org/en/)
 
 Install `node_modules`:
 
@@ -10,17 +12,13 @@ Install `node_modules`:
 npm install
 ```
 
-or
+### Mock Server
+
+npm install -g @stoplight/prism-cli
 
 ```bash
-yarn
+npm run mock
 ```
-
-## Provided Scripts
-
-Ant Design Pro provides some useful script to help you quick start and build with web project, code style check and test.
-
-Scripts provided in `package.json`. It's safe to modify or add additional script:
 
 ### Start project
 
@@ -32,24 +30,6 @@ npm start
 
 ```bash
 npm run build
-```
-
-### Check code style
-
-```bash
-npm run lint
-```
-
-You can also use script to auto fix some lint error:
-
-```bash
-npm run lint:fix
-```
-
-### Test code
-
-```bash
-npm test
 ```
 
 ## More

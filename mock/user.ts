@@ -23,7 +23,7 @@ const { ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION } = process.env;
 let access = ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION === 'site' ? 'admin' : '';
 
 const getAccess = () => {
-  return access;
+  return 'admin';
 };
 
 // 代码中会兼容本地 service mock 以及部署站点的静态数据
@@ -120,7 +120,8 @@ export default {
   'POST /api/login/account': async (req: Request, res: Response) => {
     const { password, username, type } = req.body;
     await waitTime(2000);
-    if (password === 'ant.design' && username === 'admin') {
+    console.log(password, username);
+    if (password === 'arana' && username === 'arana') {
       res.send({
         status: 'ok',
         type,
@@ -129,7 +130,7 @@ export default {
       access = 'admin';
       return;
     }
-    if (password === 'ant.design' && username === 'user') {
+    if (password === 'user' && username === 'arana') {
       res.send({
         status: 'ok',
         type,
