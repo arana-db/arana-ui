@@ -29,6 +29,12 @@ const createRestfulApi = <T>(
         console.log(e[0], options[e[1]]);
         realUrl = realUrl.replace(e[0], options[e[1]]);
       }
+      if (m === 'POST') {
+        return await request(realUrl, {
+          method: m,
+          data: options,
+        });
+      }
       return await request(realUrl, {
         method: m,
         ...(options || {}),

@@ -167,7 +167,7 @@ const Welcome: React.FC = () => {
           cardBordered
           request={async () => {
             const data = await NodeList.get({
-              tenantName: '1111',
+              tenantName: 'arana',
             });
             console.log('data', data);
             return { success: true, data };
