@@ -1,10 +1,10 @@
 import { TenantItem, TenantList } from '@/services/ant-design-pro/arana';
-import { PlusOutlined } from '@ant-design/icons';
 import { ModalForm, ProFormText } from '@ant-design/pro-components';
-import { Button, message } from 'antd';
+import { message } from 'antd';
 
 export default ({
   formRef,
+  tenant,
   modalState,
   modalVisible,
   setModalVisible,
@@ -25,17 +25,6 @@ export default ({
           setDisabled(false);
         }
       }}
-      trigger={
-        <Button
-          type="primary"
-          onClick={() => {
-            setModalVisible(true);
-          }}
-        >
-          <PlusOutlined />
-          Create
-        </Button>
-      }
       disabled={disabled}
       autoFocusFirstInput
       modalProps={{
@@ -46,6 +35,17 @@ export default ({
       formRef={formRef}
       submitTimeout={2000}
       onFinish={async (values) => {
+        console.log(tenant);
+        console.log(values);
+
+        const existed = tenant.users.find(({ username: u }) => {
+          return u === values.username;
+        });
+
+        if (existed) {
+          message.error('current user existed');
+          return;
+        }
         if (!modalState) {
           await TenantList.post(values);
         } else {
@@ -56,7 +56,8 @@ export default ({
         return true;
       }}
     >
-      <ProFormText width="md" name="name" label="name" />
+      <ProFormText width="md" name="username" label="username" />
+      <ProFormText.Password width="md" name="password" label="password" />
     </ModalForm>
   );
 };

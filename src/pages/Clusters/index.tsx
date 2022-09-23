@@ -16,9 +16,9 @@ const expandedRowRender = (item) => {
   return (
     <ProTable
       columns={[
-        { title: 'group', dataIndex: 'group', key: 'group' },
+        { title: 'group', dataIndex: 'name', key: 'name' },
         {
-          title: 'Action',
+          title: 'operate',
           dataIndex: 'operation',
           key: 'operation',
           valueType: 'option',
@@ -28,9 +28,7 @@ const expandedRowRender = (item) => {
       headerTitle={false}
       search={false}
       options={false}
-      dataSource={item.groups.map((v) => ({
-        group: v,
-      }))}
+      dataSource={item.groups}
       pagination={false}
     />
   );
@@ -128,7 +126,9 @@ const Welcome: React.FC = () => {
           cardBordered
           expandable={{ expandedRowRender }}
           request={async () => {
-            const data = await ClusterList.get({});
+            const data = await ClusterList.get({
+              tenantName: 'arana',
+            });
             console.log('data', data);
             return { success: true, data };
           }}
