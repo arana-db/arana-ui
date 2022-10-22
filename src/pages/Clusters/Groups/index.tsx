@@ -115,7 +115,9 @@ const Welcome: React.FC = () => {
           actionRef={actionRef}
           cardBordered
           request={async () => {
-            const data = await GroupList.get({});
+            const data = await GroupList.get({
+              tenantName: 'arana',
+            });
             console.log('data', data);
             return { success: true, data };
           }}

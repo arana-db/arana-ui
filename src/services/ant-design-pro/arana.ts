@@ -1,6 +1,7 @@
 // @ts-ignore
 /* eslint-disable */
 import { request } from '@umijs/max';
+import { notification } from 'antd';
 
 /** 获取当前的MySql链接 GET /arana/listeners */
 export async function getListeners(options?: { [key: string]: any }) {
@@ -29,9 +30,22 @@ const createRestfulApi = <T>(
         console.log(e[0], options[e[1]]);
         realUrl = realUrl.replace(e[0], options[e[1]]);
       }
+      if (m === 'POST') {
+        return await request(realUrl, {
+          method: m,
+          data: options,
+        }).catch(() => {});
+      }
       return await request(realUrl, {
         method: m,
         ...(options || {}),
+      }).catch((e) => {
+        const { code, message } = e.response.data;
+        notification.open({
+          message: `Code: ${code}`,
+          description: `Message: ${message}`,
+        });
+        return Promise.resolve(e);
       });
     };
   });
