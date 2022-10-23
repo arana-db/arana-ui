@@ -3,7 +3,7 @@
 import { request } from '@umijs/max';
 import { notification } from 'antd';
 
-const arana_api_prefix = '/api';
+const arana_api_prefix = '/api/v1';
 
 /** 获取当前的MySql链接 GET /api/listeners */
 export async function getListeners(options?: { [key: string]: any }) {
