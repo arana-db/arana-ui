@@ -3,9 +3,11 @@
 import { request } from '@umijs/max';
 import { notification } from 'antd';
 
-/** 获取当前的MySql链接 GET /arana/listeners */
+const arana_api_prefix = '/api';
+
+/** 获取当前的MySql链接 GET /api/listeners */
 export async function getListeners(options?: { [key: string]: any }) {
-  return request<{}>('/arana/listeners', {
+  return request<{}>(`${arana_api_prefix}/listeners`, {
     method: 'GET',
     ...(options || {}),
   });
@@ -31,7 +33,7 @@ const createRestfulApi = <T>(
         realUrl = realUrl.replace(e[0], options[e[1]]);
       }
       if (m === 'POST') {
-        return await request(realUrl, {
+        return await request(arana_api_prefix + realUrl, {
           method: m,
           data: options,
         }).catch((e) => {
@@ -43,7 +45,7 @@ const createRestfulApi = <T>(
           return Promise.resolve(e);
         });
       }
-      return await request(realUrl, {
+      return await request(arana_api_prefix + realUrl, {
         method: m,
         ...(options || {}),
       }).catch((e) => {
@@ -72,9 +74,9 @@ type Tenant = {
   }[];
 };
 
-export const TenantList = createRestfulApi<Tenant | any>(`/arana/tenants`);
+export const TenantList = createRestfulApi<Tenant | any>(`/tenants`);
 
-export const TenantItem = createRestfulApi<Tenant | any>(`/arana/tenants/{tenantName}`);
+export const TenantItem = createRestfulApi<Tenant | any>(`/tenants/{tenantName}`);
 
 type Node = {
   name: string;
@@ -86,11 +88,9 @@ type Node = {
   weight: string;
 };
 
-export const NodeList = createRestfulApi<Node | any>(`/arana/tenants/{tenantName}/nodes`);
+export const NodeList = createRestfulApi<Node | any>(`/tenants/{tenantName}/nodes`);
 
-export const NodeItem = createRestfulApi<Node | any>(
-  `/arana/tenants/{tenantName}/nodes/{nodeName}`,
-);
+export const NodeItem = createRestfulApi<Node | any>(`/api/tenants/{tenantName}/nodes/{nodeName}`);
 
 type Group = {
   name: string;
@@ -102,11 +102,9 @@ type Group = {
   weight: string;
 };
 
-export const GroupList = createRestfulApi<Node | any>(`/arana/tenants/{tenantName}/groups`);
+export const GroupList = createRestfulApi<Node | any>(`/tenants/{tenantName}/groups`);
 
-export const GroupItem = createRestfulApi<Node | any>(
-  `/arana/tenants/{tenantName}/groups/{groupName}`,
-);
+export const GroupItem = createRestfulApi<Node | any>(`/tenants/{tenantName}/groups/{groupName}`);
 
 type Cluster = {
   name: string;
@@ -118,8 +116,8 @@ type Cluster = {
   weight: string;
 };
 
-export const ClusterList = createRestfulApi<Cluster | any>(`/arana/tenants/{tenantName}/clusters`);
+export const ClusterList = createRestfulApi<Cluster | any>(`/tenants/{tenantName}/clusters`);
 
 export const ClusterItem = createRestfulApi<Cluster | any>(
-  `/arana/tenants/{tenantName}/clusters/{clustersName}`,
+  `/tenants/{tenantName}/clusters/{clustersName}`,
 );
