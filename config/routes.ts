@@ -13,12 +13,12 @@
       },
     ],
   },
-  {
-    path: '/overview',
-    name: 'overview',
-    icon: 'global',
-    component: './Overview',
-  },
+  // {
+  //   path: '/overview',
+  //   name: 'overview',
+  //   icon: 'global',
+  //   component: './Overview',
+  // },
   // {
   //   path: '/connection',
   //   name: 'connection',
@@ -86,7 +86,7 @@
   // },
   {
     path: '/',
-    redirect: '/overview',
+    redirect: '/tenants',
   },
   {
     component: './404',
