@@ -34,7 +34,14 @@ const createRestfulApi = <T>(
         return await request(realUrl, {
           method: m,
           data: options,
-        }).catch(() => {});
+        }).catch((e) => {
+          const { code, message } = e.response.data;
+          notification.open({
+            message: `Code: ${code}`,
+            description: `Message: ${message}`,
+          });
+          return Promise.resolve(e);
+        });
       }
       return await request(realUrl, {
         method: m,
