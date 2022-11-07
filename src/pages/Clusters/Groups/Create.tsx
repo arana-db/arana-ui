@@ -46,6 +46,7 @@ export default ({
       formRef={formRef}
       submitTimeout={2000}
       onFinish={async (values) => {
+        console.log('values', values)
         if (!modalState) {
           await GroupList.post(values);
         } else {

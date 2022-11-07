@@ -29,10 +29,10 @@ const createRestfulApi = <T>(
       let e;
       let realUrl = url;
       while ((e = reg.exec(url))) {
-        console.log(e[0], options[e[1]]);
         realUrl = realUrl.replace(e[0], options[e[1]]);
       }
-      if (m === 'POST') {
+      console.log('request-url:', realUrl, options)
+      if (m !== 'GET') {
         return await request(arana_api_prefix + realUrl, {
           method: m,
           data: options,
@@ -42,7 +42,7 @@ const createRestfulApi = <T>(
             message: `Code: ${code}`,
             description: `Message: ${message}`,
           });
-          return Promise.resolve(e);
+          return Promise.reject(e);
         });
       }
       return await request(arana_api_prefix + realUrl, {
@@ -54,7 +54,7 @@ const createRestfulApi = <T>(
           message: `Code: ${code}`,
           description: `Message: ${message}`,
         });
-        return Promise.resolve(e);
+        return Promise.reject(e);
       });
     };
   });

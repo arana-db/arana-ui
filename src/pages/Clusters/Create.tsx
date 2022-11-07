@@ -12,6 +12,7 @@ export default ({
   setDisabled,
   ok,
 }) => {
+  console.log('modalState', modalState)
   return (
     <ModalForm<{
       name: string;
@@ -46,10 +47,15 @@ export default ({
       formRef={formRef}
       submitTimeout={2000}
       onFinish={async (values) => {
+        const updateValues = {
+          ...(modalState || {}),
+          clustersName: values.name,
+          ...values
+        }
         if (!modalState) {
-          await ClusterList.post(values);
+          await ClusterList.post(updateValues);
         } else {
-          await ClusterItem.put(values);
+          await ClusterItem.put(updateValues);
         }
         message.success('submit success');
         ok();
@@ -62,10 +68,12 @@ export default ({
       </ProForm.Group>
       <ProFormSelect
         name="select-multiple"
-        label="Select[multiple]"
+        label="Node Group[multiple]"
         request={async ({ keyWords = '' }) => {
           console.log(keyWords);
-          const res = await GroupList.get({});
+          const res = await GroupList.get({
+            tenantName: 'arana'
+          });
           return res.map(({ name }) => ({
             label: name,
             value: name,

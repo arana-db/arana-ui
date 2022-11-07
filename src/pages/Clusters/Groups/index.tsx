@@ -64,7 +64,10 @@ const Welcome: React.FC = () => {
         <a
           key="editable"
           onClick={() => {
-            setModalState(record);
+            setModalState({
+              tenantName: record.username,
+              ...record
+            });
             setModalVisible(true);
           }}
         >

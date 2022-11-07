@@ -1,6 +1,7 @@
-import { TenantList } from '@/services/ant-design-pro/arana';
+import { TenantList, TenantItem } from '@/services/ant-design-pro/arana';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
+import { message } from 'antd';
 import { Card } from 'antd';
 import React, { useRef, useState } from 'react';
 import Create from './Create';
@@ -12,7 +13,7 @@ type GithubIssueItem = {
   password: string;
 };
 
-const expandedRowRender = (hook, setTenant) => (item) => {
+const expandedRowRender = (hook, setTenant, actionRef) => (item) => {
   return (
     <ProTable
       columns={[
@@ -35,14 +36,22 @@ const expandedRowRender = (hook, setTenant) => (item) => {
                 if (setTenant) {
                   setTenant(item);
                 }
-                console.log(item);
                 hook.setModalState(record);
                 hook.setModalVisible(true);
               }}
             >
               Edit
             </a>,
-            <a key="Delete">Delete</a>,
+            <a key="Delete" onClick={async () => {
+              await TenantItem.put({
+                tenantName: item.name,
+                users: item.users.filter(({ username }) => {
+                  return username !== record.username
+                })
+              })
+              message.success('deleted success');
+              actionRef.current?.reload();
+            }}>Delete</a>,
           ],
         },
       ]}
@@ -191,7 +200,7 @@ const Welcome: React.FC = () => {
               // listsHeight: 400,
             },
           }}
-          expandable={{ expandedRowRender: expandedRowRender(UserModalHook, setTenant) }}
+          expandable={{ expandedRowRender: expandedRowRender(UserModalHook, setTenant, actionRef) }}
           pagination={{
             pageSize: 5,
             onChange: (page) => console.log(page),
@@ -200,13 +209,15 @@ const Welcome: React.FC = () => {
             <Create
               {...CreateModalHook}
               ok={() => {
-                CreateModalHook.actionRef.current?.reload();
+                actionRef.current?.reload();
               }}
             />,
           ]}
         />
       </Card>
-      <User {...UserModalHook} tenant={tenant} ok={() => {}} />,
+      <User {...UserModalHook} tenant={tenant} ok={() => {
+        actionRef.current?.reload();
+      }} />,
     </PageContainer>
   );
 };

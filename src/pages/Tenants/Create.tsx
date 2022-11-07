@@ -46,10 +46,16 @@ export default ({
       formRef={formRef}
       submitTimeout={2000}
       onFinish={async (values) => {
+        const updateValues = {
+          ...(modalState || {}),
+          ...values
+        }
         if (!modalState) {
-          await TenantList.post(values);
+          updateValues.tenantName = values.name;
+          await TenantList.post(updateValues);
         } else {
-          await TenantItem.put(values);
+          updateValues.tenantName = modalState.name;
+          await TenantItem.put(updateValues);
         }
         message.success('submit success');
         ok();

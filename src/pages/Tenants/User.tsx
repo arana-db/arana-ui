@@ -36,20 +36,30 @@ export default ({
       submitTimeout={2000}
       onFinish={async (values) => {
         console.log(tenant);
+        console.log(modalState)
         console.log(values);
 
-        const existed = tenant.users.find(({ username: u }) => {
-          return u === values.username;
-        });
 
-        if (existed) {
-          message.error('current user existed');
-          return;
-        }
+
+
         if (!modalState) {
-          await TenantList.post(values);
+          const existed = tenant.users.find(({ username: u }) => {
+            return u === values.username;
+          });
+          if (existed) {
+            message.error('current user existed');
+            return;
+          }
+          tenant.tenantName = tenant.name;
+          tenant.users.push(values);
+          await TenantItem.put(tenant);
         } else {
-          await TenantItem.put(values);
+          const existed = tenant.users.find(({ username: u }) => {
+            return u === modalState.username;
+          });
+          Object.assign(existed, values);
+          tenant.tenantName = tenant.name;
+          await TenantItem.put(tenant);
         }
         message.success('submit success');
         ok();
