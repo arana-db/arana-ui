@@ -1,4 +1,4 @@
-import { NodeItem, NodeList } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -14,6 +14,7 @@ type GithubIssueItem = {
 
 const Welcome: React.FC = () => {
   const actionRef = useRef<ActionType>();
+  const { NodeItem, NodeList } = useTenantRequest();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalState, setModalState] = useState<Object | null>(null);
   const [disabled, setDisabled] = useState<boolean>(false);
@@ -142,7 +143,7 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await NodeItem.delete({ tenantName: record.tenant });
+                await NodeItem.delete(record);
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -166,9 +167,7 @@ const Welcome: React.FC = () => {
           actionRef={actionRef}
           cardBordered
           request={async () => {
-            const data = await NodeList.get({
-              tenantName: 'arana',
-            });
+            const data = await NodeList.get({});
             console.log('data', data);
             return { success: true, data };
           }}

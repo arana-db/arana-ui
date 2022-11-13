@@ -1,4 +1,4 @@
-import { GroupItem, GroupList } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -13,6 +13,7 @@ type GithubIssueItem = {
 };
 
 const expandedRowRender = (item) => {
+
   return (
     <ProTable
       columns={[
@@ -38,6 +39,7 @@ const expandedRowRender = (item) => {
 
 const Welcome: React.FC = () => {
   const actionRef = useRef<ActionType>();
+  const { GroupItem, GroupList } = useTenantRequest();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalState, setModalState] = useState<Object | null>(null);
   const [disabled, setDisabled] = useState<boolean>(false);
@@ -94,7 +96,8 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await GroupItem.delete(record.tenant);
+                console.log('11111111', record)
+                await GroupItem.delete(record);
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },

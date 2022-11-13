@@ -1,4 +1,4 @@
-import { ClusterItem, ClusterList, GroupList } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { PlusOutlined } from '@ant-design/icons';
 import { ModalForm, ProForm, ProFormSelect, ProFormText } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
@@ -11,14 +11,15 @@ export default ({
   disabled,
   setDisabled,
   ok,
+  onCancel
 }) => {
-  console.log('modalState', modalState)
+  const { ClusterItem, ClusterList, GroupList } = useTenantRequest();
   return (
     <ModalForm<{
       name: string;
       company: string;
     }>
-      title="Create tenant"
+      title="Create Cluster"
       visible={modalVisible}
       onVisibleChange={(visible) => {
         setModalVisible(visible);
@@ -40,7 +41,7 @@ export default ({
       disabled={disabled}
       autoFocusFirstInput
       modalProps={{
-        onCancel: () => console.log('run'),
+        onCancel,
         destroyOnClose: true,
       }}
       initialValues={modalState}
@@ -63,17 +64,16 @@ export default ({
       }}
     >
       <ProForm.Group>
-        <ProFormText width="md" name="name" label="name" />
-        <ProFormText width="md" name="type" label="type" />
+        <ProFormText width="md" name="name" label="name"
+          rules={[{ required: true, message: 'Please input your cluster name!', type: 'string' }]}
+        />
+        <ProFormText width="md" name="type" label="type" rules={[{ required: true, message: 'Please input your database connection type!', type: 'string' }]}/>
       </ProForm.Group>
       <ProFormSelect
-        name="select-multiple"
+        name="groups"
         label="Node Group[multiple]"
         request={async ({ keyWords = '' }) => {
-          console.log(keyWords);
-          const res = await GroupList.get({
-            tenantName: 'arana'
-          });
+          const res = await GroupList.get({});
           return res.map(({ name }) => ({
             label: name,
             value: name,

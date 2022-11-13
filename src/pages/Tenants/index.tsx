@@ -1,4 +1,4 @@
-import { TenantList, TenantItem } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import { message } from 'antd';
@@ -14,6 +14,7 @@ type GithubIssueItem = {
 };
 
 const expandedRowRender = (hook, setTenant, actionRef) => (item) => {
+  const { TenantItem } = useTenantRequest()
   return (
     <ProTable
       columns={[
@@ -88,6 +89,7 @@ const useModel = () => {
 };
 
 const Welcome: React.FC = () => {
+  const { TenantList } = useTenantRequest()
   const actionRef = useRef<ActionType>();
 
   const CreateModalHook = useModel();
