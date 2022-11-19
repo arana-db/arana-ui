@@ -1,6 +1,8 @@
-import { TenantList } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
-import { PageContainer, ProTable } from '@ant-design/pro-components';
+import { PageContainer, ProTable,  } from '@ant-design/pro-components';
+import { message, Modal } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Card } from 'antd';
 import React, { useRef, useState } from 'react';
 import Create from './Create';
@@ -12,7 +14,7 @@ type GithubIssueItem = {
   password: string;
 };
 
-const expandedRowRender = (hook, setTenant) => (item) => {
+const expandedRowRender = () => (item) => {
   return (
     <ProTable
       columns={[
@@ -22,28 +24,6 @@ const expandedRowRender = (hook, setTenant) => (item) => {
           dataIndex: 'password',
           hideInSearch: true,
           valueType: 'password',
-        },
-        {
-          title: 'Action',
-          dataIndex: 'operation',
-          key: 'operation',
-          valueType: 'option',
-          render: (_, record) => [
-            <a
-              key="Edit"
-              onClick={() => {
-                if (setTenant) {
-                  setTenant(item);
-                }
-                console.log(item);
-                hook.setModalState(record);
-                hook.setModalVisible(true);
-              }}
-            >
-              Edit
-            </a>,
-            <a key="Delete">Delete</a>,
-          ],
         },
       ]}
       headerTitle={false}
@@ -55,7 +35,7 @@ const expandedRowRender = (hook, setTenant) => (item) => {
   );
 };
 
-const useModel = () => {
+const useModal = () => {
   const actionRef = useRef<ActionType>();
   const formRef = useRef<ProFormInstance>();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -72,18 +52,27 @@ const useModel = () => {
       setModalVisible(visible);
     },
     modalState,
-    setModalState,
+    setModalState: (state) =>  {
+      setModalState( {
+        ...state,
+        users: (state.users || []).map((item) => ({
+          id: item.username,
+          ...item
+        }))
+      })
+    },
     disabled,
     setDisabled,
   };
 };
 
 const Welcome: React.FC = () => {
+  const { TenantList, TenantItem } = useTenantRequest()
   const actionRef = useRef<ActionType>();
 
-  const CreateModalHook = useModel();
+  const CreateModalHook = useModal();
   const [tenant, setTenant] = useState(null);
-  const UserModalHook = useModel();
+  const UserModalHook = useModal();
 
   const columns: ProColumns<GithubIssueItem>[] = [
     {
@@ -112,49 +101,26 @@ const Welcome: React.FC = () => {
         >
           Edit
         </a>,
-        // <a
-        //   target="_blank"
-        //   rel="noopener noreferrer"
-        //   key="view"
-        //   onClick={() => {
-        //     CreateModalHook.setModalState(record);
-        //     CreateModalHook.setDisabled(true);
-        //     CreateModalHook.setModalVisible(true);
-        //   }}
-        // >
-        //   View
-        // </a>,
-        // <a
-        //   target="_blank"
-        //   rel="noopener noreferrer"
-        //   key="view"
-        //   onClick={() => {
-        //     Modal.confirm({
-        //       title: 'Do you Want to delete these items?',
-        //       icon: <ExclamationCircleOutlined />,
-        //       async onOk() {
-        //         await TenantItem.delete({
-        //           tenantName: record.name
-        //         });
-        //         message.success('Delete success!');
-        //         actionRef.current?.reload();
-        //       },
-        //       onCancel() {
-        //         console.log('Cancel');
-        //       },
-        //     });
-        //   }}
-        // >
-        //   Delete
-        // </a>,
         <a
-          key="editable"
+          target="_blank"
+          rel="noopener noreferrer"
+          key="view"
           onClick={() => {
-            setTenant(record);
-            UserModalHook.setModalVisible(true);
+            Modal.confirm({
+              title: 'Do you Want to delete these items?',
+              icon: <ExclamationCircleOutlined />,
+              async onOk() {
+                await TenantItem.delete({});
+                message.success('Delete success!');
+                actionRef.current?.reload();
+              },
+              onCancel() {
+                console.log('Cancel');
+              },
+            });
           }}
         >
-          Create User
+          Delete
         </a>,
       ],
     },
@@ -169,7 +135,6 @@ const Welcome: React.FC = () => {
           cardBordered
           request={async () => {
             const data = await TenantList.get({});
-            console.log('data', data);
             return { success: true, data };
           }}
           editable={{
@@ -191,22 +156,24 @@ const Welcome: React.FC = () => {
               // listsHeight: 400,
             },
           }}
-          expandable={{ expandedRowRender: expandedRowRender(UserModalHook, setTenant) }}
+          expandable={{ expandedRowRender: expandedRowRender(UserModalHook, setTenant, actionRef, TenantItem) }}
           pagination={{
-            pageSize: 5,
+            pageSize: 10,
             onChange: (page) => console.log(page),
           }}
           toolBarRender={() => [
             <Create
               {...CreateModalHook}
               ok={() => {
-                CreateModalHook.actionRef.current?.reload();
+                actionRef.current?.reload();
               }}
             />,
           ]}
         />
       </Card>
-      <User {...UserModalHook} tenant={tenant} ok={() => {}} />,
+      <User {...UserModalHook} tenant={tenant} ok={() => {
+        actionRef.current?.reload();
+      }} />,
     </PageContainer>
   );
 };

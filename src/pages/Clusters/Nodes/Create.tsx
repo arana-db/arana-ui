@@ -1,7 +1,8 @@
-import { NodeItem, NodeList } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { PlusOutlined } from '@ant-design/icons';
 import { ModalForm, ProForm, ProFormText } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
+
 
 export default ({
   formRef,
@@ -12,6 +13,10 @@ export default ({
   setDisabled,
   ok,
 }) => {
+  const { NodeItem, NodeList } = useTenantRequest();
+  if(modalState) {
+    modalState.port = String(modalState.port)
+  }
   return (
     <ModalForm<{
       name: string;
@@ -46,6 +51,7 @@ export default ({
       formRef={formRef}
       submitTimeout={2000}
       onFinish={async (values) => {
+        values.port = Number(values.port)
         if (!modalState) {
           await NodeList.post(values);
         } else {
@@ -62,7 +68,9 @@ export default ({
       </ProForm.Group>
       <ProForm.Group>
         <ProFormText width="md" name="host" label="host" />
-        <ProFormText width="md" name="port" label="port" />
+        <ProFormText width="md" name="port" label="port"
+         rules={[{ required: true, message: 'Please input your port!', type: 'string' }]}
+        />
       </ProForm.Group>
       <ProForm.Group>
         <ProFormText width="md" name="username" label="username" />

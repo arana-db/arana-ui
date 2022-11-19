@@ -7,6 +7,7 @@ export async function currentUser(options?: { [key: string]: any }) {
   return {
     success: true,
     data: {
+      tenantName: 'arana',
       name: 'Serati Ma',
       avatar: 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
       userid: '00000001',

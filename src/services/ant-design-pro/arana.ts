@@ -1,7 +1,8 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from '@umijs/max';
+import { request, useModel } from '@umijs/max';
 import { notification } from 'antd';
+import { useCallback } from 'react';
 
 const arana_api_prefix = '/api/v1';
 
@@ -13,7 +14,18 @@ export async function getListeners(options?: { [key: string]: any }) {
   });
 }
 
-const createRestfulApi = <T>(
+const handleErrotCatch = (promise: Promise<any>) => {
+  return promise.catch((e) => {
+    const { code, message } = e.response.data;
+    notification.open({
+      message: `Code: ${code}`,
+      description: `Message: ${message}`,
+    });
+    return Promise.reject(e);
+  });
+};
+
+const useRestfulApi = <T>(
   url: string,
 ): {
   get: (options: T) => Promise<Array<T>>;
@@ -21,42 +33,42 @@ const createRestfulApi = <T>(
   delete: (options: T) => Promise<any>;
   put: (options: T) => Promise<any>;
 } => {
+  const { initialState } = useModel('@@initialState');
+  const { currentUser } = initialState || {};
+  const { tenantName } = currentUser;
   const restfulApi = {};
   const method = ['GET', 'POST', 'DELETE', 'PUT'];
   method.forEach((m) => {
-    restfulApi[m.toLocaleLowerCase()] = async function (options: { [key: string]: any }) {
+    restfulApi[m.toLocaleLowerCase()] = useCallback(async function (options: {
+      [key: string]: any;
+    }) {
       const reg = /\{(\w+)\}/g;
       let e;
       let realUrl = url;
+
+      // add global tanantName
+      if (realUrl.indexOf('{tenantName}') !== -1) {
+        Object.assign(options, {
+          tenantName,
+        });
+      }
+
       while ((e = reg.exec(url))) {
-        console.log(e[0], options[e[1]]);
         realUrl = realUrl.replace(e[0], options[e[1]]);
       }
-      if (m === 'POST') {
-        return await request(arana_api_prefix + realUrl, {
-          method: m,
-          data: options,
-        }).catch((e) => {
-          const { code, message } = e.response.data;
-          notification.open({
-            message: `Code: ${code}`,
-            description: `Message: ${message}`,
-          });
-          return Promise.resolve(e);
-        });
-      }
-      return await request(arana_api_prefix + realUrl, {
-        method: m,
-        ...(options || {}),
-      }).catch((e) => {
-        const { code, message } = e.response.data;
-        notification.open({
-          message: `Code: ${code}`,
-          description: `Message: ${message}`,
-        });
-        return Promise.resolve(e);
-      });
-    };
+      let params =
+        m !== 'GET'
+          ? {
+              method: m,
+              data: options,
+            }
+          : {
+              method: m,
+              ...(options || {}),
+            };
+      return handleErrotCatch(request(arana_api_prefix + realUrl, params));
+    },
+    [tenantName]);
   });
   return restfulApi as {
     get: (options: T) => Promise<Array<T>>;
@@ -74,9 +86,19 @@ type Tenant = {
   }[];
 };
 
-export const TenantList = createRestfulApi<Tenant | any>(`/tenants`);
-
-export const TenantItem = createRestfulApi<Tenant | any>(`/tenants/{tenantName}`);
+export const useTenantRequest = () => {
+  return {
+    TenantList: useRestfulApi<Tenant | any>(`/tenants`),
+    TenantItem: useRestfulApi<Tenant | any>(`/tenants/{tenantName}`),
+    NodeList: useRestfulApi<Node | any>(`/tenants/{tenantName}/nodes`),
+    NodeItem: useRestfulApi<Node | any>(`/tenants/{tenantName}/nodes/{name}`),
+    GroupList: useRestfulApi<Node | any>(`/tenants/{tenantName}/groups`),
+    ClusterGroupList: useRestfulApi<Node | any>(`/tenants/{tenantName}/clusters/{clusterName}/groups`),
+    ClusterGroupItem: useRestfulApi<Node | any>(`/tenants/{tenantName}/clusters/{clusterName}/groups/{name}`),
+    ClusterList: useRestfulApi<Cluster | any>(`/tenants/{tenantName}/clusters`),
+    ClusterItem: useRestfulApi<Cluster | any>(`/tenants/{tenantName}/clusters/{name}`),
+  };
+};
 
 type Node = {
   name: string;
@@ -88,10 +110,6 @@ type Node = {
   weight: string;
 };
 
-export const NodeList = createRestfulApi<Node | any>(`/tenants/{tenantName}/nodes`);
-
-export const NodeItem = createRestfulApi<Node | any>(`/api/tenants/{tenantName}/nodes/{nodeName}`);
-
 type Group = {
   name: string;
   host: string;
@@ -102,10 +120,6 @@ type Group = {
   weight: string;
 };
 
-export const GroupList = createRestfulApi<Node | any>(`/tenants/{tenantName}/groups`);
-
-export const GroupItem = createRestfulApi<Node | any>(`/tenants/{tenantName}/groups/{groupName}`);
-
 type Cluster = {
   name: string;
   host: string;
@@ -115,9 +129,3 @@ type Cluster = {
   database: string;
   weight: string;
 };
-
-export const ClusterList = createRestfulApi<Cluster | any>(`/tenants/{tenantName}/clusters`);
-
-export const ClusterItem = createRestfulApi<Cluster | any>(
-  `/tenants/{tenantName}/clusters/{clustersName}`,
-);

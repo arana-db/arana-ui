@@ -1,4 +1,4 @@
-import { TenantItem, TenantList } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { ModalForm, ProFormText } from '@ant-design/pro-components';
 import { message } from 'antd';
 
@@ -12,6 +12,7 @@ export default ({
   setDisabled,
   ok,
 }) => {
+  const { TenantItem } = useTenantRequest()
   return (
     <ModalForm<{
       name: string;
@@ -36,20 +37,30 @@ export default ({
       submitTimeout={2000}
       onFinish={async (values) => {
         console.log(tenant);
+        console.log(modalState)
         console.log(values);
 
-        const existed = tenant.users.find(({ username: u }) => {
-          return u === values.username;
-        });
 
-        if (existed) {
-          message.error('current user existed');
-          return;
-        }
+
+
         if (!modalState) {
-          await TenantList.post(values);
+          const existed = tenant.users.find(({ username: u }) => {
+            return u === values.username;
+          });
+          if (existed) {
+            message.error('current user existed');
+            return;
+          }
+          tenant.tenantName = tenant.name;
+          tenant.users.push(values);
+          await TenantItem.put(tenant);
         } else {
-          await TenantItem.put(values);
+          const existed = tenant.users.find(({ username: u }) => {
+            return u === modalState.username;
+          });
+          Object.assign(existed, values);
+          tenant.tenantName = tenant.name;
+          await TenantItem.put(tenant);
         }
         message.success('submit success');
         ok();

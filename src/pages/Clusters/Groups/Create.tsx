@@ -1,4 +1,4 @@
-import { GroupItem, GroupList, NodeList } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { PlusOutlined } from '@ant-design/icons';
 import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
@@ -12,12 +12,13 @@ export default ({
   setDisabled,
   ok,
 }) => {
+  const { ClusterGroupItem, ClusterGroupList, NodeList, ClusterList } = useTenantRequest();
   return (
     <ModalForm<{
       name: string;
       company: string;
     }>
-      title="Create tenant"
+      title="Create Cluster Group"
       visible={modalVisible}
       onVisibleChange={(visible) => {
         setModalVisible(visible);
@@ -47,21 +48,35 @@ export default ({
       submitTimeout={2000}
       onFinish={async (values) => {
         if (!modalState) {
-          await GroupList.post(values);
+          await ClusterGroupList.post(values);
         } else {
-          await GroupItem.put(values);
+          await ClusterGroupItem.put(values);
         }
         message.success('submit success');
         ok();
         return true;
       }}
     >
-      <ProFormText width="md" name="name" label="name" />
       <ProFormSelect
-        name="select-multiple"
-        label="Select[multiple]"
+        name="clusterName"
+        label="cluster"
         request={async ({ keyWords = '' }) => {
-          console.log(keyWords);
+          const res = await ClusterList.get({});
+          return res.map(({ name }) => ({
+            label: name,
+            value: name,
+          }));
+        }}
+        placeholder="Please select cluster"
+        rules={[{ required: true, message: 'Please select your cluster!', type: 'string' }]}
+      />
+      <ProFormText width="md" name="name" label="name"
+        rules={[{ required: true, message: 'Please input your cluster group name!', type: 'string' }]}
+      />
+      <ProFormSelect
+        name="nodes"
+        label="Cluster Group Node[multiple]"
+        request={async ({ keyWords = '' }) => {
           const res = await NodeList.get({});
           return res.map(({ name }) => ({
             label: name,
@@ -71,8 +86,8 @@ export default ({
         fieldProps={{
           mode: 'multiple',
         }}
-        placeholder="Please select favorite colors"
-        rules={[{ required: true, message: 'Please select your favorite colors!', type: 'array' }]}
+        placeholder="Please select cluster group node"
+        rules={[{ required: true, message: 'Please select your cluster group node!', type: 'array' }]}
       />
     </ModalForm>
   );

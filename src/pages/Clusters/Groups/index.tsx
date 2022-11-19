@@ -1,4 +1,4 @@
-import { GroupItem, GroupList } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -13,6 +13,7 @@ type GithubIssueItem = {
 };
 
 const expandedRowRender = (item) => {
+
   return (
     <ProTable
       columns={[
@@ -38,6 +39,7 @@ const expandedRowRender = (item) => {
 
 const Welcome: React.FC = () => {
   const actionRef = useRef<ActionType>();
+  const { ClusterGroupItem, GroupList } = useTenantRequest();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalState, setModalState] = useState<Object | null>(null);
   const [disabled, setDisabled] = useState<boolean>(false);
@@ -64,7 +66,10 @@ const Welcome: React.FC = () => {
         <a
           key="editable"
           onClick={() => {
-            setModalState(record);
+            setModalState({
+              tenantName: record.username,
+              ...record
+            });
             setModalVisible(true);
           }}
         >
@@ -91,7 +96,8 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await GroupItem.delete(record.tenant);
+                console.log('11111111', record)
+                await ClusterGroupItem.delete(record);
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -115,10 +121,7 @@ const Welcome: React.FC = () => {
           actionRef={actionRef}
           cardBordered
           request={async () => {
-            const data = await GroupList.get({
-              tenantName: 'arana',
-            });
-            console.log('data', data);
+            const data = await GroupList.get({});
             return { success: true, data };
           }}
           editable={{
@@ -142,7 +145,7 @@ const Welcome: React.FC = () => {
             },
           }}
           pagination={{
-            pageSize: 5,
+            pageSize: 10,
             onChange: (page) => console.log(page),
           }}
           toolBarRender={() => [
@@ -152,7 +155,12 @@ const Welcome: React.FC = () => {
               disabled={disabled}
               setDisabled={setDisabled}
               modalVisible={modalVisible}
-              setModalVisible={setModalVisible}
+              setModalVisible={(visible) => {
+                if (!visible) {
+                  setModalState(null);
+                }
+                setModalVisible(visible);
+              }}
               ok={() => {
                 actionRef.current?.reload();
               }}

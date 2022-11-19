@@ -1,4 +1,4 @@
-import { ClusterItem, ClusterList, GroupList } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { PlusOutlined } from '@ant-design/icons';
 import { ModalForm, ProForm, ProFormSelect, ProFormText } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
@@ -11,13 +11,15 @@ export default ({
   disabled,
   setDisabled,
   ok,
+  onCancel
 }) => {
+  const { ClusterItem, ClusterList, ClusterGroupList } = useTenantRequest();
   return (
     <ModalForm<{
       name: string;
       company: string;
     }>
-      title="Create tenant"
+      title="Create Cluster"
       visible={modalVisible}
       onVisibleChange={(visible) => {
         setModalVisible(visible);
@@ -39,17 +41,22 @@ export default ({
       disabled={disabled}
       autoFocusFirstInput
       modalProps={{
-        onCancel: () => console.log('run'),
+        onCancel,
         destroyOnClose: true,
       }}
       initialValues={modalState}
       formRef={formRef}
       submitTimeout={2000}
       onFinish={async (values) => {
+        const updateValues = {
+          ...(modalState || {}),
+          clustersName: values.name,
+          ...values
+        }
         if (!modalState) {
-          await ClusterList.post(values);
+          await ClusterList.post(updateValues);
         } else {
-          await ClusterItem.put(values);
+          await ClusterItem.put(updateValues);
         }
         message.success('submit success');
         ok();
@@ -57,15 +64,16 @@ export default ({
       }}
     >
       <ProForm.Group>
-        <ProFormText width="md" name="name" label="name" />
-        <ProFormText width="md" name="type" label="type" />
+        <ProFormText width="md" name="name" label="name"
+          rules={[{ required: true, message: 'Please input your cluster name!', type: 'string' }]}
+        />
+        <ProFormText width="md" name="type" label="type" rules={[{ required: true, message: 'Please input your database connection type!', type: 'string' }]}/>
       </ProForm.Group>
-      <ProFormSelect
-        name="select-multiple"
-        label="Select[multiple]"
+      {/* <ProFormSelect
+        name="groups"
+        label="Node Group[multiple]"
         request={async ({ keyWords = '' }) => {
-          console.log(keyWords);
-          const res = await GroupList.get({});
+          const res = await ClusterGroupList.get({});
           return res.map(({ name }) => ({
             label: name,
             value: name,
@@ -75,8 +83,8 @@ export default ({
           mode: 'multiple',
         }}
         placeholder="Please select favorite colors"
-        rules={[{ required: true, message: 'Please select your favorite colors!', type: 'array' }]}
-      />
+        rules={[{ required: true, message: 'Please select your node group!', type: 'array' }]}
+      /> */}
     </ModalForm>
   );
 };

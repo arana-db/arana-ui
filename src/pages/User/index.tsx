@@ -1,4 +1,4 @@
-import { TenantItem, TenantList } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { PlusOutlined } from '@ant-design/icons';
 import { ModalForm, ProForm, ProFormText } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
@@ -12,6 +12,7 @@ export default ({
   setDisabled,
   ok,
 }) => {
+  const { TenantItem, TenantList } = useTenantRequest()
   return (
     <ModalForm<{
       name: string;

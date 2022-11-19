@@ -1,4 +1,4 @@
-import { ClusterItem, ClusterList } from '@/services/ant-design-pro/arana';
+import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -28,7 +28,7 @@ const expandedRowRender = (item) => {
       headerTitle={false}
       search={false}
       options={false}
-      dataSource={item.groups}
+      dataSource={(item.groups || []).map(item => ({ name: item }))}
       pagination={false}
     />
   );
@@ -36,6 +36,7 @@ const expandedRowRender = (item) => {
 
 const Welcome: React.FC = () => {
   const actionRef = useRef<ActionType>();
+  const { ClusterItem, ClusterList } = useTenantRequest();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalState, setModalState] = useState<Object | null>(null);
   const [disabled, setDisabled] = useState<boolean>(false);
@@ -74,7 +75,9 @@ const Welcome: React.FC = () => {
         <a
           key="editable"
           onClick={() => {
-            setModalState(record);
+            setModalState({
+              ...record,
+            });
             setModalVisible(true);
           }}
         >
@@ -101,7 +104,7 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await ClusterItem.delete(record.tenant);
+                await ClusterItem.delete(record);
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -126,10 +129,7 @@ const Welcome: React.FC = () => {
           cardBordered
           expandable={{ expandedRowRender }}
           request={async () => {
-            const data = await ClusterList.get({
-              tenantName: 'arana',
-            });
-            console.log('data', data);
+            const data = await ClusterList.get({});
             return { success: true, data };
           }}
           editable={{
@@ -152,7 +152,7 @@ const Welcome: React.FC = () => {
             },
           }}
           pagination={{
-            pageSize: 5,
+            pageSize: 10,
             onChange: (page) => console.log(page),
           }}
           toolBarRender={() => [
@@ -165,6 +165,10 @@ const Welcome: React.FC = () => {
               setModalVisible={setModalVisible}
               ok={() => {
                 actionRef.current?.reload();
+                setModalState(null)
+              }}
+              onCancel={() => {
+                setModalState(null)
               }}
             />,
           ]}
