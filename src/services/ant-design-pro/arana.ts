@@ -68,7 +68,7 @@ const useRestfulApi = <T>(
             };
       return handleErrotCatch(request(arana_api_prefix + realUrl, params));
     },
-    []);
+    [tenantName]);
   });
   return restfulApi as {
     get: (options: T) => Promise<Array<T>>;
@@ -91,9 +91,10 @@ export const useTenantRequest = () => {
     TenantList: useRestfulApi<Tenant | any>(`/tenants`),
     TenantItem: useRestfulApi<Tenant | any>(`/tenants/{tenantName}`),
     NodeList: useRestfulApi<Node | any>(`/tenants/{tenantName}/nodes`),
-    NodeItem: useRestfulApi<Node | any>(`/api/tenants/{tenantName}/nodes/{name}`),
+    NodeItem: useRestfulApi<Node | any>(`/tenants/{tenantName}/nodes/{name}`),
     GroupList: useRestfulApi<Node | any>(`/tenants/{tenantName}/groups`),
-    GroupItem: useRestfulApi<Node | any>(`/tenants/{tenantName}/groups/{name}`),
+    ClusterGroupList: useRestfulApi<Node | any>(`/tenants/{tenantName}/clusters/{clusterName}/groups`),
+    ClusterGroupItem: useRestfulApi<Node | any>(`/tenants/{tenantName}/clusters/{clusterName}/groups/{name}`),
     ClusterList: useRestfulApi<Cluster | any>(`/tenants/{tenantName}/clusters`),
     ClusterItem: useRestfulApi<Cluster | any>(`/tenants/{tenantName}/clusters/{name}`),
   };

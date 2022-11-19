@@ -28,7 +28,7 @@ const expandedRowRender = (item) => {
       headerTitle={false}
       search={false}
       options={false}
-      dataSource={item.groups}
+      dataSource={(item.groups || []).map(item => ({ name: item }))}
       pagination={false}
     />
   );
@@ -75,10 +75,8 @@ const Welcome: React.FC = () => {
         <a
           key="editable"
           onClick={() => {
-            const groups = record?.groups.map(({name}) => name)
             setModalState({
               ...record,
-              groups
             });
             setModalVisible(true);
           }}
@@ -154,7 +152,7 @@ const Welcome: React.FC = () => {
             },
           }}
           pagination={{
-            pageSize: 5,
+            pageSize: 10,
             onChange: (page) => console.log(page),
           }}
           toolBarRender={() => [

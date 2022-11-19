@@ -13,7 +13,7 @@ export default ({
   ok,
   onCancel
 }) => {
-  const { ClusterItem, ClusterList, GroupList } = useTenantRequest();
+  const { ClusterItem, ClusterList, ClusterGroupList } = useTenantRequest();
   return (
     <ModalForm<{
       name: string;
@@ -69,11 +69,11 @@ export default ({
         />
         <ProFormText width="md" name="type" label="type" rules={[{ required: true, message: 'Please input your database connection type!', type: 'string' }]}/>
       </ProForm.Group>
-      <ProFormSelect
+      {/* <ProFormSelect
         name="groups"
         label="Node Group[multiple]"
         request={async ({ keyWords = '' }) => {
-          const res = await GroupList.get({});
+          const res = await ClusterGroupList.get({});
           return res.map(({ name }) => ({
             label: name,
             value: name,
@@ -84,7 +84,7 @@ export default ({
         }}
         placeholder="Please select favorite colors"
         rules={[{ required: true, message: 'Please select your node group!', type: 'array' }]}
-      />
+      /> */}
     </ModalForm>
   );
 };

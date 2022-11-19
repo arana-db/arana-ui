@@ -12,7 +12,7 @@ export default ({
   setDisabled,
   ok,
 }) => {
-  const { GroupItem, GroupList, NodeList } = useTenantRequest();
+  const { ClusterGroupItem, ClusterGroupList, NodeList, ClusterList } = useTenantRequest();
   return (
     <ModalForm<{
       name: string;
@@ -47,17 +47,29 @@ export default ({
       formRef={formRef}
       submitTimeout={2000}
       onFinish={async (values) => {
-        console.log('values', values)
         if (!modalState) {
-          await GroupList.post(values);
+          await ClusterGroupList.post(values);
         } else {
-          await GroupItem.put(values);
+          await ClusterGroupItem.put(values);
         }
         message.success('submit success');
         ok();
         return true;
       }}
     >
+      <ProFormSelect
+        name="clusterName"
+        label="cluster"
+        request={async ({ keyWords = '' }) => {
+          const res = await ClusterList.get({});
+          return res.map(({ name }) => ({
+            label: name,
+            value: name,
+          }));
+        }}
+        placeholder="Please select cluster"
+        rules={[{ required: true, message: 'Please select your cluster!', type: 'string' }]}
+      />
       <ProFormText width="md" name="name" label="name"
         rules={[{ required: true, message: 'Please input your cluster group name!', type: 'string' }]}
       />
@@ -74,7 +86,7 @@ export default ({
         fieldProps={{
           mode: 'multiple',
         }}
-        placeholder="Please select favorite colors"
+        placeholder="Please select cluster group node"
         rules={[{ required: true, message: 'Please select your cluster group node!', type: 'array' }]}
       />
     </ModalForm>

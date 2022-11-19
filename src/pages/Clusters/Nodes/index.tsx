@@ -168,7 +168,6 @@ const Welcome: React.FC = () => {
           cardBordered
           request={async () => {
             const data = await NodeList.get({});
-            console.log('data', data);
             return { success: true, data };
           }}
           editable={{
@@ -191,7 +190,7 @@ const Welcome: React.FC = () => {
             },
           }}
           pagination={{
-            pageSize: 5,
+            pageSize: 10,
             onChange: (page) => console.log(page),
           }}
           toolBarRender={() => [
@@ -201,7 +200,12 @@ const Welcome: React.FC = () => {
               disabled={disabled}
               setDisabled={setDisabled}
               modalVisible={modalVisible}
-              setModalVisible={setModalVisible}
+              setModalVisible={(visible) => {
+                if (!visible) {
+                  setModalState(null);
+                }
+                setModalVisible(visible);
+              }}
               ok={() => {
                 actionRef.current?.reload();
               }}

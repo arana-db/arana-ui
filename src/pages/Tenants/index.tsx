@@ -1,7 +1,8 @@
 import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
-import { PageContainer, ProTable } from '@ant-design/pro-components';
-import { message } from 'antd';
+import { PageContainer, ProTable,  } from '@ant-design/pro-components';
+import { message, Modal } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Card } from 'antd';
 import React, { useRef, useState } from 'react';
 import Create from './Create';
@@ -34,7 +35,7 @@ const expandedRowRender = () => (item) => {
   );
 };
 
-const useModel = () => {
+const useModal = () => {
   const actionRef = useRef<ActionType>();
   const formRef = useRef<ProFormInstance>();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -69,9 +70,9 @@ const Welcome: React.FC = () => {
   const { TenantList, TenantItem } = useTenantRequest()
   const actionRef = useRef<ActionType>();
 
-  const CreateModalHook = useModel();
+  const CreateModalHook = useModal();
   const [tenant, setTenant] = useState(null);
-  const UserModalHook = useModel();
+  const UserModalHook = useModal();
 
   const columns: ProColumns<GithubIssueItem>[] = [
     {
@@ -99,6 +100,27 @@ const Welcome: React.FC = () => {
           }}
         >
           Edit
+        </a>,
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          key="view"
+          onClick={() => {
+            Modal.confirm({
+              title: 'Do you Want to delete these items?',
+              icon: <ExclamationCircleOutlined />,
+              async onOk() {
+                await TenantItem.delete({});
+                message.success('Delete success!');
+                actionRef.current?.reload();
+              },
+              onCancel() {
+                console.log('Cancel');
+              },
+            });
+          }}
+        >
+          Delete
         </a>,
       ],
     },

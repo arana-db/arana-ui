@@ -14,6 +14,9 @@ export default ({
   ok,
 }) => {
   const { NodeItem, NodeList } = useTenantRequest();
+  if(modalState) {
+    modalState.port = String(modalState.port)
+  }
   return (
     <ModalForm<{
       name: string;
