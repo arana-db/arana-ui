@@ -13,8 +13,7 @@ type GithubIssueItem = {
   password: string;
 };
 
-const expandedRowRender = (hook, setTenant, actionRef) => (item) => {
-  const { TenantItem } = useTenantRequest()
+const expandedRowRender = () => (item) => {
   return (
     <ProTable
       columns={[
@@ -24,36 +23,6 @@ const expandedRowRender = (hook, setTenant, actionRef) => (item) => {
           dataIndex: 'password',
           hideInSearch: true,
           valueType: 'password',
-        },
-        {
-          title: 'Action',
-          dataIndex: 'operation',
-          key: 'operation',
-          valueType: 'option',
-          render: (_, record) => [
-            <a
-              key="Edit"
-              onClick={() => {
-                if (setTenant) {
-                  setTenant(item);
-                }
-                hook.setModalState(record);
-                hook.setModalVisible(true);
-              }}
-            >
-              Edit
-            </a>,
-            <a key="Delete" onClick={async () => {
-              await TenantItem.put({
-                tenantName: item.name,
-                users: item.users.filter(({ username }) => {
-                  return username !== record.username
-                })
-              })
-              message.success('deleted success');
-              actionRef.current?.reload();
-            }}>Delete</a>,
-          ],
         },
       ]}
       headerTitle={false}
@@ -82,14 +51,22 @@ const useModel = () => {
       setModalVisible(visible);
     },
     modalState,
-    setModalState,
+    setModalState: (state) =>  {
+      setModalState( {
+        ...state,
+        users: (state.users || []).map((item) => ({
+          id: item.username,
+          ...item
+        }))
+      })
+    },
     disabled,
     setDisabled,
   };
 };
 
 const Welcome: React.FC = () => {
-  const { TenantList } = useTenantRequest()
+  const { TenantList, TenantItem } = useTenantRequest()
   const actionRef = useRef<ActionType>();
 
   const CreateModalHook = useModel();
@@ -123,50 +100,6 @@ const Welcome: React.FC = () => {
         >
           Edit
         </a>,
-        // <a
-        //   target="_blank"
-        //   rel="noopener noreferrer"
-        //   key="view"
-        //   onClick={() => {
-        //     CreateModalHook.setModalState(record);
-        //     CreateModalHook.setDisabled(true);
-        //     CreateModalHook.setModalVisible(true);
-        //   }}
-        // >
-        //   View
-        // </a>,
-        // <a
-        //   target="_blank"
-        //   rel="noopener noreferrer"
-        //   key="view"
-        //   onClick={() => {
-        //     Modal.confirm({
-        //       title: 'Do you Want to delete these items?',
-        //       icon: <ExclamationCircleOutlined />,
-        //       async onOk() {
-        //         await TenantItem.delete({
-        //           tenantName: record.name
-        //         });
-        //         message.success('Delete success!');
-        //         actionRef.current?.reload();
-        //       },
-        //       onCancel() {
-        //         console.log('Cancel');
-        //       },
-        //     });
-        //   }}
-        // >
-        //   Delete
-        // </a>,
-        <a
-          key="editable"
-          onClick={() => {
-            setTenant(record);
-            UserModalHook.setModalVisible(true);
-          }}
-        >
-          Create User
-        </a>,
       ],
     },
   ];
@@ -180,7 +113,6 @@ const Welcome: React.FC = () => {
           cardBordered
           request={async () => {
             const data = await TenantList.get({});
-            console.log('data', data);
             return { success: true, data };
           }}
           editable={{
@@ -202,9 +134,9 @@ const Welcome: React.FC = () => {
               // listsHeight: 400,
             },
           }}
-          expandable={{ expandedRowRender: expandedRowRender(UserModalHook, setTenant, actionRef) }}
+          expandable={{ expandedRowRender: expandedRowRender(UserModalHook, setTenant, actionRef, TenantItem) }}
           pagination={{
-            pageSize: 5,
+            pageSize: 10,
             onChange: (page) => console.log(page),
           }}
           toolBarRender={() => [

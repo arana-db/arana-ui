@@ -83,7 +83,7 @@ export default ({
           mode: 'multiple',
         }}
         placeholder="Please select favorite colors"
-        rules={[{ required: true, message: 'Please select your favorite colors!', type: 'array' }]}
+        rules={[{ required: true, message: 'Please select your node group!', type: 'array' }]}
       />
     </ModalForm>
   );
