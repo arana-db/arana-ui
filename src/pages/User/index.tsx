@@ -12,13 +12,13 @@ export default ({
   setDisabled,
   ok,
 }) => {
-  const { TenantItem, TenantList } = useTenantRequest()
+  const { TenantItem, TenantList } = useTenantRequest();
   return (
     <ModalForm<{
       name: string;
       company: string;
     }>
-      title="Create tenant"
+      title="Create User"
       visible={modalVisible}
       onVisibleChange={(visible) => {
         setModalVisible(visible);

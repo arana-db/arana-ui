@@ -61,6 +61,12 @@
     icon: 'usergroupAdd',
     component: './Tenants',
   },
+  {
+    path: '/users',
+    name: 'users',
+    icon: 'usergroupAdd',
+    component: './Users',
+  },
   // {
   //   path: '/admin',
   //   name: 'admin',

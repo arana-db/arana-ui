@@ -13,27 +13,6 @@ type GithubIssueItem = {
   password: string;
 };
 
-const expandedRowRender = () => (item) => {
-  return (
-    <ProTable
-      columns={[
-        { title: 'username', dataIndex: 'username', key: 'username' },
-        {
-          title: 'password',
-          dataIndex: 'password',
-          hideInSearch: true,
-          valueType: 'password',
-        },
-      ]}
-      headerTitle={false}
-      search={false}
-      options={false}
-      dataSource={item.users}
-      pagination={false}
-    />
-  );
-};
-
 const useModal = () => {
   const actionRef = useRef<ActionType>();
   const formRef = useRef<ProFormInstance>();
@@ -54,10 +33,6 @@ const useModal = () => {
     setModalState: (state) => {
       setModalState({
         ...state,
-        users: (state.users || []).map((item) => ({
-          id: item.username,
-          ...item,
-        })),
       });
     },
     disabled,
@@ -66,25 +41,29 @@ const useModal = () => {
 };
 
 const Welcome: React.FC = () => {
-  const { TenantList, TenantItem } = useTenantRequest();
+  const { UserList, UserItem } = useTenantRequest();
   const actionRef = useRef<ActionType>();
 
   const CreateModalHook = useModal();
-  const [setTenant] = useState(null);
-  const UserModalHook = useModal();
 
   const columns: ProColumns<GithubIssueItem>[] = [
     {
-      title: 'name',
-      dataIndex: 'name',
+      title: 'username',
+      dataIndex: 'username',
       formItemProps: {
         rules: [
           {
             required: true,
-            message: 'name is required',
+            message: 'username is required',
           },
         ],
       },
+    },
+    {
+      title: 'password',
+      dataIndex: 'password',
+      hideInSearch: true,
+      valueType: 'password',
     },
     {
       title: 'operate',
@@ -109,7 +88,9 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await TenantItem.delete({});
+                await UserItem.delete({
+                  _userName: record.username,
+                });
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -133,8 +114,9 @@ const Welcome: React.FC = () => {
           actionRef={actionRef}
           cardBordered
           request={async (params) => {
-            let data = await TenantList.get({});
+            let data = await UserList.get({});
             const { current, pageSize, ...options } = params;
+
             Object.keys(options).forEach((key) => {
               if (typeof options[key] === 'string') {
                 data = data.filter((item) => {
@@ -142,6 +124,7 @@ const Welcome: React.FC = () => {
                 });
               }
             });
+
             return { success: true, data };
           }}
           editable={{
@@ -162,9 +145,6 @@ const Welcome: React.FC = () => {
             setting: {
               // listsHeight: 400,
             },
-          }}
-          expandable={{
-            expandedRowRender: expandedRowRender(UserModalHook, setTenant, actionRef, TenantItem),
           }}
           pagination={{
             pageSize: 10,

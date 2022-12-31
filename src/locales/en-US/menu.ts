@@ -58,4 +58,5 @@ export default {
   'menu.clusterGroups': 'Cluster Groups Manager',
   'menu.clusterNodes': 'Cluster Nodes Manager',
   'menu.tenants': 'Tenants Manager',
+  'menu.users': 'Users Manager',
 };
