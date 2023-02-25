@@ -2,8 +2,8 @@ import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
-import { Card, message, Modal } from 'antd';
-import React, { useRef, useState } from 'react';
+import { Card, message, Modal, Select } from 'antd';
+import React, { useRef, useState, useEffect } from 'react';
 import Create from './Create';
 
 type GithubIssueItem = {
@@ -12,40 +12,64 @@ type GithubIssueItem = {
   password: string;
 };
 
-const expandedRowRender = (item) => {
+const MySelect: React.FC<{
+  state: {
+    type: number;
+  };
+  /** Value 和 onChange 会被自动注入 */
+  value?: string;
+  onChange?: (value: string) => void;
+}> = (props) => {
+  const { ClusterList } = useTenantRequest();
 
-  return (
-    <ProTable
-      columns={[
-        { title: 'node', dataIndex: 'node', key: 'node' },
-        {
-          title: 'Action',
-          dataIndex: 'operation',
-          key: 'operation',
-          valueType: 'option',
-          render: () => [<a key="Edit">Edit</a>, <a key="Delete">Delete</a>],
-        },
-      ]}
-      headerTitle={false}
-      search={false}
-      options={false}
-      dataSource={item.nodes.map((v) => ({
-        node: v,
-      }))}
-      pagination={false}
-    />
-  );
+  const { state } = props;
+
+  const [innerOptions, setOptions] = useState<
+    {
+      label: React.ReactNode;
+      value: number;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    ClusterList.get({}).then((res) => {
+      setOptions(
+        res.map(({ name }) => ({
+          label: name,
+          value: name,
+        })),
+      );
+    });
+  }, [JSON.stringify(state)]);
+
+  return <Select options={innerOptions} value={props.value} onChange={props.onChange} />;
 };
 
 const Welcome: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const { ClusterGroupItem, GroupList } = useTenantRequest();
+  const { DbTableList, DbTableItem } = useTenantRequest();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalState, setModalState] = useState<Object | null>(null);
   const [disabled, setDisabled] = useState<boolean>(false);
   const formRef = useRef<ProFormInstance>();
 
   const columns: ProColumns<GithubIssueItem>[] = [
+    {
+      title: 'cluster',
+      key: 'cluster',
+      hideInTable: true,
+      dataIndex: 'cluster',
+      renderFormItem: (_item, { type, defaultRender, ...rest }) => {
+        return (
+          <MySelect
+            {...rest}
+            state={{
+              type: 0,
+            }}
+          />
+        );
+      },
+    },
     {
       title: 'name',
       dataIndex: 'name',
@@ -67,8 +91,7 @@ const Welcome: React.FC = () => {
           key="editable"
           onClick={() => {
             setModalState({
-              tenantName: record.username,
-              ...record
+              ...record,
             });
             setModalVisible(true);
           }}
@@ -96,8 +119,10 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                console.log('11111111', record)
-                await ClusterGroupItem.delete(record);
+                await DbTableItem.delete({
+                  ...record,
+                  _name: record.name,
+                });
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -120,8 +145,21 @@ const Welcome: React.FC = () => {
           columns={columns}
           actionRef={actionRef}
           cardBordered
-          request={async () => {
-            const data = await GroupList.get({});
+          request={async (params) => {
+            if (!params.cluster) {
+              return { success: true, data: [] };
+            }
+            let data = await DbTableList.get({
+              clusterName: params.cluster,
+            });
+            const { current, pageSize, cluster, ...options } = params;
+            Object.keys(options).forEach((key) => {
+              if (typeof options[key] === 'string') {
+                data = data.filter((item) => {
+                  return item[key].includes(options[key]);
+                });
+              }
+            });
             return { success: true, data };
           }}
           editable={{
@@ -134,7 +172,6 @@ const Welcome: React.FC = () => {
               console.log('value: ', value);
             },
           }}
-          expandable={{ expandedRowRender }}
           rowKey="name"
           search={{
             labelWidth: 'auto',
@@ -155,7 +192,7 @@ const Welcome: React.FC = () => {
               disabled={disabled}
               setDisabled={setDisabled}
               modalVisible={modalVisible}
-              setModalVisible={(visible) => {
+              setModalVisible={(visible: boolean) => {
                 if (!visible) {
                   setModalState(null);
                 }

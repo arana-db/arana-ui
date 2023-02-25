@@ -54,7 +54,7 @@ export default ({
         if (!modalState) {
           await NodeList.post(values);
         } else {
-          console.log(values);
+          values._name = modalState.name;
           await NodeItem.put(values);
         }
         message.success('submit success');

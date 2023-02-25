@@ -13,7 +13,7 @@ type GithubIssueItem = {
   password: string;
 };
 
-const expandedRowRender = () => (item) => {
+const expandedRowRender = (item) => {
   return (
     <ProTable
       columns={[
@@ -70,8 +70,6 @@ const Welcome: React.FC = () => {
   const actionRef = useRef<ActionType>();
 
   const CreateModalHook = useModal();
-  const [setTenant] = useState(null);
-  const UserModalHook = useModal();
 
   const columns: ProColumns<GithubIssueItem>[] = [
     {
@@ -109,7 +107,9 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await TenantItem.delete({});
+                await TenantItem.delete({
+                  _tenantName: record.name,
+                });
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -164,7 +164,7 @@ const Welcome: React.FC = () => {
             },
           }}
           expandable={{
-            expandedRowRender: expandedRowRender(UserModalHook, setTenant, actionRef, TenantItem),
+            expandedRowRender,
           }}
           pagination={{
             pageSize: 10,
@@ -174,7 +174,7 @@ const Welcome: React.FC = () => {
             <Create
               {...CreateModalHook}
               ok={() => {
-                actionRef.current?.reload();
+                window.location.reload();
               }}
             />,
           ]}

@@ -52,10 +52,10 @@ export default ({
           ...values,
         };
         if (!modalState) {
-          updateValues.tenantName = values.name;
+          updateValues._tenantName = values.name;
           await TenantList.post(updateValues);
         } else {
-          updateValues.tenantName = modalState.name;
+          updateValues._tenantName = modalState.name;
           await TenantItem.put(updateValues);
         }
         message.success('submit success');

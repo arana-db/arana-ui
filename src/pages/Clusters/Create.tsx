@@ -1,6 +1,6 @@
 import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { PlusOutlined } from '@ant-design/icons';
-import { ModalForm, ProForm, ProFormSelect, ProFormText } from '@ant-design/pro-components';
+import { ModalForm, ProForm, ProFormText } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
 
 export default ({
@@ -11,9 +11,9 @@ export default ({
   disabled,
   setDisabled,
   ok,
-  onCancel
+  onCancel,
 }) => {
-  const { ClusterItem, ClusterList, ClusterGroupList } = useTenantRequest();
+  const { ClusterItem, ClusterList } = useTenantRequest();
   return (
     <ModalForm<{
       name: string;
@@ -51,11 +51,12 @@ export default ({
         const updateValues = {
           ...(modalState || {}),
           clustersName: values.name,
-          ...values
-        }
+          ...values,
+        };
         if (!modalState) {
           await ClusterList.post(updateValues);
         } else {
+          updateValues._name = modalState.name;
           await ClusterItem.put(updateValues);
         }
         message.success('submit success');
@@ -64,10 +65,24 @@ export default ({
       }}
     >
       <ProForm.Group>
-        <ProFormText width="md" name="name" label="name"
+        <ProFormText
+          width="md"
+          name="name"
+          label="name"
           rules={[{ required: true, message: 'Please input your cluster name!', type: 'string' }]}
         />
-        <ProFormText width="md" name="type" label="type" rules={[{ required: true, message: 'Please input your database connection type!', type: 'string' }]}/>
+        <ProFormText
+          width="md"
+          name="type"
+          label="type"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your database connection type!',
+              type: 'string',
+            },
+          ]}
+        />
       </ProForm.Group>
       {/* <ProFormSelect
         name="groups"

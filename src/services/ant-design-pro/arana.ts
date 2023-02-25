@@ -6,6 +6,10 @@ import { useCallback } from 'react';
 
 const arana_api_prefix = '/api/v1';
 
+const jwtCache = window.localStorage.getItem('jwt') || '{}';
+
+const jwt = JSON.parse(jwtCache);
+
 /** 获取当前的MySql链接 GET /api/listeners */
 export async function getListeners(options?: { [key: string]: any }) {
   return request<{}>(`${arana_api_prefix}/listeners`, {
@@ -17,6 +21,16 @@ export async function getListeners(options?: { [key: string]: any }) {
 const handleErrotCatch = (promise: Promise<any>) => {
   return promise.catch((e) => {
     const { code, message } = e.response.data;
+    if (code === 401) {
+      notification.open({
+        message: `Code: 401`,
+        description: `Message: Login has expired. Please login again`,
+      });
+      setTimeout(() => {
+        window.location.href = '/user/login';
+      }, 2000);
+      return;
+    }
     notification.open({
       message: `Code: ${code}`,
       description: `Message: ${message}`,
@@ -68,9 +82,15 @@ const useRestfulApi = <T>(
             ? {
                 method: m,
                 data: options,
+                headers: {
+                  Authorization: `Bearer ${jwt.token}`,
+                },
               }
             : {
                 method: m,
+                headers: {
+                  Authorization: `Bearer ${jwt.token}`,
+                },
                 ...(options || {}),
               };
         return handleErrotCatch(request(arana_api_prefix + realUrl, params));
@@ -97,18 +117,24 @@ type Tenant = {
 export const useTenantRequest = () => {
   return {
     TenantList: useRestfulApi<Tenant | any>(`/tenants`),
-    TenantItem: useRestfulApi<Tenant | any>(`/tenants/{tenantName}`),
+    TenantItem: useRestfulApi<Tenant | any>(`/tenants/{_tenantName}`),
     NodeList: useRestfulApi<Node | any>(`/tenants/{tenantName}/nodes`),
-    NodeItem: useRestfulApi<Node | any>(`/tenants/{tenantName}/nodes/{name}`),
+    NodeItem: useRestfulApi<Node | any>(`/tenants/{tenantName}/nodes/{_name}`),
     GroupList: useRestfulApi<Node | any>(`/tenants/{tenantName}/groups`),
     ClusterGroupList: useRestfulApi<Node | any>(
       `/tenants/{tenantName}/clusters/{clusterName}/groups`,
     ),
     ClusterGroupItem: useRestfulApi<Node | any>(
-      `/tenants/{tenantName}/clusters/{clusterName}/groups/{name}`,
+      `/tenants/{tenantName}/clusters/{clusterName}/groups/{_name}`,
+    ),
+    DbTableList: useRestfulApi<Cluster | any>(
+      `/tenants/{tenantName}/clusters/{clusterName}/tables`,
+    ),
+    DbTableItem: useRestfulApi<Cluster | any>(
+      `/tenants/{tenantName}/clusters/{clusterName}/tables/{tableName}`,
     ),
     ClusterList: useRestfulApi<Cluster | any>(`/tenants/{tenantName}/clusters`),
-    ClusterItem: useRestfulApi<Cluster | any>(`/tenants/{tenantName}/clusters/{name}`),
+    ClusterItem: useRestfulApi<Cluster | any>(`/tenants/{tenantName}/clusters/{_name}`),
     UserList: useRestfulApi<Cluster | any>(`/tenants/{tenantName}/users`),
     UserItem: useRestfulApi<Cluster | any>(`/tenants/{tenantName}/users/{_userName}`),
   };
@@ -143,3 +169,26 @@ type Cluster = {
   database: string;
   weight: string;
 };
+
+export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
+  const res = await request('/login', {
+    method: 'POST',
+    data: body,
+  });
+
+  window.localStorage.setItem('jwt', JSON.stringify(res));
+
+  return {
+    status: res.code === 200 ? 'ok' : 'error',
+    type: 'account',
+    currentAuthority: 'admin',
+  };
+  // return request<API.LoginResult>('/api/login/account', {
+  //   method: 'POST',
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //   },
+  //   data: body,
+  //   ...(options || {}),
+  // });
+}

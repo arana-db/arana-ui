@@ -12,22 +12,9 @@ type GithubIssueItem = {
   password: string;
 };
 
-const expandedRowRender = (item: any) => {
-  return (
-    <ProTable
-      columns={[{ title: 'group', dataIndex: 'name', key: 'name' }]}
-      headerTitle={false}
-      search={false}
-      options={false}
-      dataSource={(item.groups || []).map((i) => ({ name: i }))}
-      pagination={false}
-    />
-  );
-};
-
 const Welcome: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const { ClusterItem, ClusterList } = useTenantRequest();
+  const { NodeItem, NodeList } = useTenantRequest();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalState, setModalState] = useState<Object | null>(null);
   const [disabled, setDisabled] = useState<boolean>(false);
@@ -47,8 +34,58 @@ const Welcome: React.FC = () => {
       },
     },
     {
-      title: 'type',
-      dataIndex: 'type',
+      title: 'database',
+      dataIndex: 'database',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: 'database is required',
+          },
+        ],
+      },
+    },
+    {
+      title: 'host',
+      dataIndex: 'host',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: 'host is required',
+          },
+        ],
+      },
+    },
+    {
+      title: 'port',
+      dataIndex: 'port',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: 'port is required',
+          },
+        ],
+      },
+    },
+    {
+      title: 'username',
+      dataIndex: 'username',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: 'username is required',
+          },
+        ],
+      },
+    },
+    {
+      title: 'password',
+      dataIndex: 'password',
+      hideInSearch: true,
+      valueType: 'password',
       formItemProps: {
         rules: [
           {
@@ -59,6 +96,19 @@ const Welcome: React.FC = () => {
       },
     },
     {
+      title: 'weight',
+      dataIndex: 'weight',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: 'weight is required',
+          },
+        ],
+      },
+    },
+
+    {
       title: 'operate',
       valueType: 'option',
       key: 'option',
@@ -66,9 +116,7 @@ const Welcome: React.FC = () => {
         <a
           key="editable"
           onClick={() => {
-            setModalState({
-              ...record,
-            });
+            setModalState(record);
             setModalVisible(true);
           }}
         >
@@ -95,7 +143,9 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await ClusterItem.delete(record);
+                await NodeItem.delete({
+                  _name: record.name,
+                });
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -118,10 +168,10 @@ const Welcome: React.FC = () => {
           columns={columns}
           actionRef={actionRef}
           cardBordered
-          expandable={{ expandedRowRender }}
           request={async (params) => {
-            let data = await ClusterList.get({});
+            let data = await NodeList.get({});
             const { current, pageSize, ...options } = params;
+
             Object.keys(options).forEach((key) => {
               if (typeof options[key] === 'string') {
                 data = data.filter((item) => {
@@ -129,6 +179,7 @@ const Welcome: React.FC = () => {
                 });
               }
             });
+
             return { success: true, data };
           }}
           editable={{
@@ -161,13 +212,14 @@ const Welcome: React.FC = () => {
               disabled={disabled}
               setDisabled={setDisabled}
               modalVisible={modalVisible}
-              setModalVisible={setModalVisible}
+              setModalVisible={(visible) => {
+                if (!visible) {
+                  setModalState(null);
+                }
+                setModalVisible(visible);
+              }}
               ok={() => {
                 actionRef.current?.reload();
-                setModalState(null);
-              }}
-              onCancel={() => {
-                setModalState(null);
               }}
             />,
           ]}

@@ -44,16 +44,22 @@
     component: './Clusters',
   },
   {
+    path: '/dbTables',
+    name: 'dbTables',
+    icon: 'groupOutlined',
+    component: './DbTables',
+  },
+  {
     path: '/clusterGroups',
     name: 'clusterGroups',
     icon: 'groupOutlined',
-    component: './Clusters/Groups',
+    component: './ClusterGroups',
   },
   {
     path: '/clusterNodes',
     name: 'clusterNodes',
     icon: 'subnodeOutlined',
-    component: './Clusters/Nodes',
+    component: './ClusterNodes',
   },
   {
     path: '/tenants',
