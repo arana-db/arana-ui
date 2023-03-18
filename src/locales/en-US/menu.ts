@@ -49,7 +49,6 @@ export default {
   'menu.editor.flow': 'Flow Editor',
   'menu.editor.mind': 'Mind Editor',
   'menu.editor.koni': 'Koni Editor',
-
   'menu.overview': 'Overview',
   'menu.datasource': 'Data Source Manager',
   'menu.connection': 'Connection Manager',
@@ -57,5 +56,7 @@ export default {
   'menu.cluster': 'Cluster Manager',
   'menu.clusterGroups': 'Cluster Groups Manager',
   'menu.clusterNodes': 'Cluster Nodes Manager',
+  'menu.dbTables': 'Cluster DB Manager',
   'menu.tenants': 'Tenants Manager',
+  'menu.users': 'Users Manager',
 };

@@ -1,7 +1,7 @@
 import Footer from '@/components/Footer';
-import { login } from '@/services/ant-design-pro/api';
+import { login, getTenants } from '@/services/ant-design-pro/arana';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
+import { LoginForm, ProFormCheckbox, ProFormText, ProFormSelect } from '@ant-design/pro-components';
 import { FormattedMessage, history, SelectLang, useIntl, useModel } from '@umijs/max';
 import { Alert, message, Tabs } from 'antd';
 import React, { useState } from 'react';
@@ -42,6 +42,9 @@ const Login: React.FC = () => {
   const handleSubmit = async (values: API.LoginParams) => {
     try {
       // 登录
+      if (values.username === 'root') {
+        delete values.tenant;
+      }
       const msg = await login({ ...values, type });
       if (msg.status === 'ok') {
         const defaultLoginSuccessMessage = intl.formatMessage({
@@ -105,6 +108,23 @@ const Login: React.FC = () => {
           )}
           {type === 'account' && (
             <>
+              <ProFormSelect
+                name="tenant"
+                label="Tenant"
+                showSearch
+                debounceTime={300}
+                request={async ({ keyWords }) => {
+                  const res = await getTenants();
+                  return res
+                    .filter(({ name }) => !keyWords || name.includes(keyWords))
+                    .map(({ name }) => ({
+                      label: name,
+                      value: name,
+                    }));
+                }}
+                placeholder="Please select a tenant"
+                rules={[{ required: true, message: 'Please select your tenant!' }]}
+              />
               <ProFormText
                 name="username"
                 fieldProps={{

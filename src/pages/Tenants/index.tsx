@@ -1,12 +1,11 @@
 import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
-import { PageContainer, ProTable,  } from '@ant-design/pro-components';
+import { PageContainer, ProTable } from '@ant-design/pro-components';
 import { message, Modal } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Card } from 'antd';
 import React, { useRef, useState } from 'react';
 import Create from './Create';
-import User from './User';
 
 type GithubIssueItem = {
   tenant: string;
@@ -14,7 +13,7 @@ type GithubIssueItem = {
   password: string;
 };
 
-const expandedRowRender = () => (item) => {
+const expandedRowRender = (item) => {
   return (
     <ProTable
       columns={[
@@ -52,14 +51,14 @@ const useModal = () => {
       setModalVisible(visible);
     },
     modalState,
-    setModalState: (state) =>  {
-      setModalState( {
+    setModalState: (state) => {
+      setModalState({
         ...state,
         users: (state.users || []).map((item) => ({
           id: item.username,
-          ...item
-        }))
-      })
+          ...item,
+        })),
+      });
     },
     disabled,
     setDisabled,
@@ -67,12 +66,10 @@ const useModal = () => {
 };
 
 const Welcome: React.FC = () => {
-  const { TenantList, TenantItem } = useTenantRequest()
+  const { TenantList, TenantItem } = useTenantRequest();
   const actionRef = useRef<ActionType>();
 
   const CreateModalHook = useModal();
-  const [tenant, setTenant] = useState(null);
-  const UserModalHook = useModal();
 
   const columns: ProColumns<GithubIssueItem>[] = [
     {
@@ -110,7 +107,9 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await TenantItem.delete({});
+                await TenantItem.delete({
+                  _tenantName: record.name,
+                });
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -133,8 +132,16 @@ const Welcome: React.FC = () => {
           columns={columns}
           actionRef={actionRef}
           cardBordered
-          request={async () => {
-            const data = await TenantList.get({});
+          request={async (params) => {
+            let data = await TenantList.get({});
+            const { current, pageSize, ...options } = params;
+            Object.keys(options).forEach((key) => {
+              if (typeof options[key] === 'string') {
+                data = data.filter((item) => {
+                  return item[key].includes(options[key]);
+                });
+              }
+            });
             return { success: true, data };
           }}
           editable={{
@@ -156,7 +163,9 @@ const Welcome: React.FC = () => {
               // listsHeight: 400,
             },
           }}
-          expandable={{ expandedRowRender: expandedRowRender(UserModalHook, setTenant, actionRef, TenantItem) }}
+          expandable={{
+            expandedRowRender,
+          }}
           pagination={{
             pageSize: 10,
             onChange: (page) => console.log(page),
@@ -165,15 +174,12 @@ const Welcome: React.FC = () => {
             <Create
               {...CreateModalHook}
               ok={() => {
-                actionRef.current?.reload();
+                window.location.reload();
               }}
             />,
           ]}
         />
       </Card>
-      <User {...UserModalHook} tenant={tenant} ok={() => {
-        actionRef.current?.reload();
-      }} />,
     </PageContainer>
   );
 };

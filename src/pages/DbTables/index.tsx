@@ -2,8 +2,8 @@ import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
-import { Card, message, Modal } from 'antd';
-import React, { useRef, useState } from 'react';
+import { Card, message, Modal, Select } from 'antd';
+import React, { useRef, useState, useEffect } from 'react';
 import Create from './Create';
 
 type GithubIssueItem = {
@@ -12,28 +12,64 @@ type GithubIssueItem = {
   password: string;
 };
 
-const expandedRowRender = (item: any) => {
-  return (
-    <ProTable
-      columns={[{ title: 'group', dataIndex: 'name', key: 'name' }]}
-      headerTitle={false}
-      search={false}
-      options={false}
-      dataSource={(item.groups || []).map((i) => ({ name: i }))}
-      pagination={false}
-    />
-  );
+const MySelect: React.FC<{
+  state: {
+    type: number;
+  };
+  /** Value 和 onChange 会被自动注入 */
+  value?: string;
+  onChange?: (value: string) => void;
+}> = (props) => {
+  const { ClusterList } = useTenantRequest();
+
+  const { state } = props;
+
+  const [innerOptions, setOptions] = useState<
+    {
+      label: React.ReactNode;
+      value: number;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    ClusterList.get({}).then((res) => {
+      setOptions(
+        res.map(({ name }) => ({
+          label: name,
+          value: name,
+        })),
+      );
+    });
+  }, [JSON.stringify(state)]);
+
+  return <Select options={innerOptions} value={props.value} onChange={props.onChange} />;
 };
 
 const Welcome: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const { ClusterItem, ClusterList } = useTenantRequest();
+  const { DbTableList, DbTableItem } = useTenantRequest();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalState, setModalState] = useState<Object | null>(null);
   const [disabled, setDisabled] = useState<boolean>(false);
   const formRef = useRef<ProFormInstance>();
 
   const columns: ProColumns<GithubIssueItem>[] = [
+    {
+      title: 'cluster',
+      key: 'cluster',
+      hideInTable: true,
+      dataIndex: 'cluster',
+      renderFormItem: (_item, { type, defaultRender, ...rest }) => {
+        return (
+          <MySelect
+            {...rest}
+            state={{
+              type: 0,
+            }}
+          />
+        );
+      },
+    },
     {
       title: 'name',
       dataIndex: 'name',
@@ -42,18 +78,6 @@ const Welcome: React.FC = () => {
           {
             required: true,
             message: 'name is required',
-          },
-        ],
-      },
-    },
-    {
-      title: 'type',
-      dataIndex: 'type',
-      formItemProps: {
-        rules: [
-          {
-            required: true,
-            message: '此项为必填项',
           },
         ],
       },
@@ -95,7 +119,10 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                await ClusterItem.delete(record);
+                await DbTableItem.delete({
+                  ...record,
+                  _name: record.name,
+                });
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -118,10 +145,14 @@ const Welcome: React.FC = () => {
           columns={columns}
           actionRef={actionRef}
           cardBordered
-          expandable={{ expandedRowRender }}
           request={async (params) => {
-            let data = await ClusterList.get({});
-            const { current, pageSize, ...options } = params;
+            if (!params.cluster) {
+              return { success: true, data: [] };
+            }
+            let data = await DbTableList.get({
+              clusterName: params.cluster,
+            });
+            const { current, pageSize, cluster, ...options } = params;
             Object.keys(options).forEach((key) => {
               if (typeof options[key] === 'string') {
                 data = data.filter((item) => {
@@ -161,13 +192,14 @@ const Welcome: React.FC = () => {
               disabled={disabled}
               setDisabled={setDisabled}
               modalVisible={modalVisible}
-              setModalVisible={setModalVisible}
+              setModalVisible={(visible: boolean) => {
+                if (!visible) {
+                  setModalState(null);
+                }
+                setModalVisible(visible);
+              }}
               ok={() => {
                 actionRef.current?.reload();
-                setModalState(null);
-              }}
-              onCancel={() => {
-                setModalState(null);
               }}
             />,
           ]}

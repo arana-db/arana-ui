@@ -44,22 +44,34 @@
     component: './Clusters',
   },
   {
+    path: '/dbTables',
+    name: 'dbTables',
+    icon: 'groupOutlined',
+    component: './DbTables',
+  },
+  {
     path: '/clusterGroups',
     name: 'clusterGroups',
     icon: 'groupOutlined',
-    component: './Clusters/Groups',
+    component: './ClusterGroups',
   },
   {
     path: '/clusterNodes',
     name: 'clusterNodes',
     icon: 'subnodeOutlined',
-    component: './Clusters/Nodes',
+    component: './ClusterNodes',
   },
   {
     path: '/tenants',
     name: 'tenants',
     icon: 'usergroupAdd',
     component: './Tenants',
+  },
+  {
+    path: '/users',
+    name: 'users',
+    icon: 'usergroupAdd',
+    component: './Users',
   },
   // {
   //   path: '/admin',

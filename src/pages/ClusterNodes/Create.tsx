@@ -3,7 +3,6 @@ import { PlusOutlined } from '@ant-design/icons';
 import { ModalForm, ProForm, ProFormText } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
 
-
 export default ({
   formRef,
   modalState,
@@ -14,15 +13,15 @@ export default ({
   ok,
 }) => {
   const { NodeItem, NodeList } = useTenantRequest();
-  if(modalState) {
-    modalState.port = String(modalState.port)
+  if (modalState) {
+    modalState.port = String(modalState.port);
   }
   return (
     <ModalForm<{
       name: string;
       company: string;
     }>
-      title="Create tenant"
+      title="Create Nodes"
       visible={modalVisible}
       onVisibleChange={(visible) => {
         setModalVisible(visible);
@@ -51,10 +50,11 @@ export default ({
       formRef={formRef}
       submitTimeout={2000}
       onFinish={async (values) => {
-        values.port = Number(values.port)
+        values.port = Number(values.port);
         if (!modalState) {
           await NodeList.post(values);
         } else {
+          values._name = modalState.name;
           await NodeItem.put(values);
         }
         message.success('submit success');
@@ -68,8 +68,11 @@ export default ({
       </ProForm.Group>
       <ProForm.Group>
         <ProFormText width="md" name="host" label="host" />
-        <ProFormText width="md" name="port" label="port"
-         rules={[{ required: true, message: 'Please input your port!', type: 'string' }]}
+        <ProFormText
+          width="md"
+          name="port"
+          label="port"
+          rules={[{ required: true, message: 'Please input your port!', type: 'string' }]}
         />
       </ProForm.Group>
       <ProForm.Group>

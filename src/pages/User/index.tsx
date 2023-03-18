@@ -2,6 +2,7 @@ import { useTenantRequest } from '@/services/ant-design-pro/arana';
 import { PlusOutlined } from '@ant-design/icons';
 import { ModalForm, ProForm, ProFormText } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
+import { useModel } from '@umijs/max';
 
 export default ({
   formRef,
@@ -12,13 +13,14 @@ export default ({
   setDisabled,
   ok,
 }) => {
-  const { TenantItem, TenantList } = useTenantRequest()
+  const { TenantItem, TenantList } = useTenantRequest();
+  const { initialState } = useModel('@@initialState');
   return (
     <ModalForm<{
       name: string;
       company: string;
     }>
-      title="Create tenant"
+      title="Create User"
       visible={modalVisible}
       onVisibleChange={(visible) => {
         setModalVisible(visible);
@@ -50,7 +52,10 @@ export default ({
         if (!modalState) {
           await TenantList.post(values);
         } else {
-          await TenantItem.put(values);
+          await TenantItem.put({
+            ...values,
+            _tenantName: initialState?.currentUser?.tenantName,
+          });
         }
         message.success('submit success');
         ok();

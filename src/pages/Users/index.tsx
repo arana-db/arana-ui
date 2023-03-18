@@ -1,8 +1,9 @@
 import { useTenantRequest } from '@/services/ant-design-pro/arana';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
-import { Card, message, Modal } from 'antd';
+import { message, Modal } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Card } from 'antd';
 import React, { useRef, useState } from 'react';
 import Create from './Create';
 
@@ -12,51 +13,57 @@ type GithubIssueItem = {
   password: string;
 };
 
-const expandedRowRender = (item) => {
-
-  return (
-    <ProTable
-      columns={[
-        { title: 'node', dataIndex: 'node', key: 'node' },
-        {
-          title: 'Action',
-          dataIndex: 'operation',
-          key: 'operation',
-          valueType: 'option',
-          render: () => [<a key="Edit">Edit</a>, <a key="Delete">Delete</a>],
-        },
-      ]}
-      headerTitle={false}
-      search={false}
-      options={false}
-      dataSource={item.nodes.map((v) => ({
-        node: v,
-      }))}
-      pagination={false}
-    />
-  );
-};
-
-const Welcome: React.FC = () => {
+const useModal = () => {
   const actionRef = useRef<ActionType>();
-  const { ClusterGroupItem, GroupList } = useTenantRequest();
+  const formRef = useRef<ProFormInstance>();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalState, setModalState] = useState<Object | null>(null);
   const [disabled, setDisabled] = useState<boolean>(false);
-  const formRef = useRef<ProFormInstance>();
+  return {
+    actionRef,
+    formRef,
+    modalVisible,
+    setModalVisible: (visible) => {
+      if (!visible) {
+        setModalState(null);
+      }
+      setModalVisible(visible);
+    },
+    modalState,
+    setModalState: (state) => {
+      setModalState({
+        ...state,
+      });
+    },
+    disabled,
+    setDisabled,
+  };
+};
+
+const Welcome: React.FC = () => {
+  const { UserList, UserItem } = useTenantRequest();
+  const actionRef = useRef<ActionType>();
+
+  const CreateModalHook = useModal();
 
   const columns: ProColumns<GithubIssueItem>[] = [
     {
-      title: 'name',
-      dataIndex: 'name',
+      title: 'username',
+      dataIndex: 'username',
       formItemProps: {
         rules: [
           {
             required: true,
-            message: 'name is required',
+            message: 'username is required',
           },
         ],
       },
+    },
+    {
+      title: 'password',
+      dataIndex: 'password',
+      hideInSearch: true,
+      valueType: 'password',
     },
     {
       title: 'operate',
@@ -66,26 +73,11 @@ const Welcome: React.FC = () => {
         <a
           key="editable"
           onClick={() => {
-            setModalState({
-              tenantName: record.username,
-              ...record
-            });
-            setModalVisible(true);
+            CreateModalHook.setModalState(record);
+            CreateModalHook.setModalVisible(true);
           }}
         >
           Edit
-        </a>,
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          key="view"
-          onClick={() => {
-            setModalState(record);
-            setDisabled(true);
-            setModalVisible(true);
-          }}
-        >
-          View
         </a>,
         <a
           target="_blank"
@@ -96,8 +88,9 @@ const Welcome: React.FC = () => {
               title: 'Do you Want to delete these items?',
               icon: <ExclamationCircleOutlined />,
               async onOk() {
-                console.log('11111111', record)
-                await ClusterGroupItem.delete(record);
+                await UserItem.delete({
+                  _userName: record.username,
+                });
                 message.success('Delete success!');
                 actionRef.current?.reload();
               },
@@ -120,8 +113,18 @@ const Welcome: React.FC = () => {
           columns={columns}
           actionRef={actionRef}
           cardBordered
-          request={async () => {
-            const data = await GroupList.get({});
+          request={async (params) => {
+            let data = await UserList.get({});
+            const { current, pageSize, ...options } = params;
+
+            Object.keys(options).forEach((key) => {
+              if (typeof options[key] === 'string') {
+                data = data.filter((item) => {
+                  return item[key].includes(options[key]);
+                });
+              }
+            });
+
             return { success: true, data };
           }}
           editable={{
@@ -134,7 +137,6 @@ const Welcome: React.FC = () => {
               console.log('value: ', value);
             },
           }}
-          expandable={{ expandedRowRender }}
           rowKey="name"
           search={{
             labelWidth: 'auto',
@@ -150,17 +152,7 @@ const Welcome: React.FC = () => {
           }}
           toolBarRender={() => [
             <Create
-              formRef={formRef}
-              modalState={modalState}
-              disabled={disabled}
-              setDisabled={setDisabled}
-              modalVisible={modalVisible}
-              setModalVisible={(visible) => {
-                if (!visible) {
-                  setModalState(null);
-                }
-                setModalVisible(visible);
-              }}
+              {...CreateModalHook}
               ok={() => {
                 actionRef.current?.reload();
               }}
