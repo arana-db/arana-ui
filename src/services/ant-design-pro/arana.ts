@@ -5,14 +5,19 @@ import { notification } from 'antd';
 import { useCallback } from 'react';
 
 const arana_api_prefix = '/api/v1';
-
-const jwtCache = window.localStorage.getItem('jwt') || '{}';
-
-const jwt = JSON.parse(jwtCache);
+const arana_open_api_prefix = '/openapi/v1';
 
 /** 获取当前的MySql链接 GET /api/listeners */
 export async function getListeners(options?: { [key: string]: any }) {
   return request<{}>(`${arana_api_prefix}/listeners`, {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** 获取当前的存在的租户列表 */
+export async function getTenants(options?: { [key: string]: any }) {
+  return request<{}>(`${arana_open_api_prefix}/tenants`, {
     method: 'GET',
     ...(options || {}),
   });
@@ -52,6 +57,8 @@ const useRestfulApi = <T>(
   const { tenantName } = currentUser;
   const restfulApi = {};
   const method = ['GET', 'POST', 'DELETE', 'PUT'];
+  const jwtCache = window.localStorage.getItem('jwt') || '{}';
+  const jwt = JSON.parse(jwtCache);
   method.forEach((m) => {
     restfulApi[m.toLocaleLowerCase()] = useCallback(
       async function (options: { [key: string]: any }) {
